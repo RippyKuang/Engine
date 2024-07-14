@@ -62,6 +62,6 @@ namespace Engine
         void print(int id);
         void act(int id, _T t);
         void act(int id, _R t);
-        
+        Item getCoord(int id, int base=-1);
     };
 }

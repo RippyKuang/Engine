@@ -136,9 +136,8 @@ namespace Engine
                 {
                     res[m * _bCol + s] = 0;
                     for (int n = 0; n < _bRow; n++)
-                    {
+
                         res[m * _bCol + s] += this->data[m * _Cols + n] * b[n * _bCol + s];
-                    }
                 }
             }
             return res;

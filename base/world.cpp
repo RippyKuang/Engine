@@ -55,4 +55,10 @@ namespace Engine
         pose[id] = t * pose[id];
         items.at(id).transform(t);
     }
+    Item World::getCoord(int id, int base)
+    {
+        Item it =items.at(id);
+        it.transform(inv(pose[base]));
+        return it;
+    }
 }
