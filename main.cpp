@@ -19,8 +19,6 @@ int main(int argc, char *argv[])
 
     Engine::Camera *cam = (Engine::Camera *)w.get(1);
     std::vector<Engine::Point2i> projs = cam->project(cube_in_camera);
-    for (auto proj : projs)
-        std::cout << proj << std::endl;
 
     Engine::GFrame frame(argc, argv);
     frame.show();
