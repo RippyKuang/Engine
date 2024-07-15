@@ -15,50 +15,66 @@ namespace Engine
     }
     Cube::Cube(Vector3d center, double x, double y, double z)
     {
-        corners.push_back(Vector4d{center[0]+x/2,center[1]-y/2,center[2]+z/2,1});
-        corners.push_back(Vector4d{center[0]+x/2,center[1]-y/2,center[2]-z/2,1});
-        corners.push_back(Vector4d{center[0]+x/2,center[1]+y/2,center[2]+z/2,1});
-        corners.push_back(Vector4d{center[0]+x/2,center[1]+y/2,center[2]-z/2,1});
+        corners.push_back(Vector4d{center[0] + x / 2, center[1] - y / 2, center[2] + z / 2, 1});
+        corners.push_back(Vector4d{center[0] + x / 2, center[1] - y / 2, center[2] - z / 2, 1});
+        corners.push_back(Vector4d{center[0] + x / 2, center[1] + y / 2, center[2] + z / 2, 1});
+        corners.push_back(Vector4d{center[0] + x / 2, center[1] + y / 2, center[2] - z / 2, 1});
 
-        corners.push_back(Vector4d{center[0]-x/2,center[1]-y/2,center[2]+z/2,1});
-        corners.push_back(Vector4d{center[0]-x/2,center[1]-y/2,center[2]-z/2,1});
-        corners.push_back(Vector4d{center[0]-x/2,center[1]+y/2,center[2]+z/2,1});
-        corners.push_back(Vector4d{center[0]-x/2,center[1]+y/2,center[2]-z/2,1});
-        init_pose = getTransformMat(EYE(3),center);
+        corners.push_back(Vector4d{center[0] - x / 2, center[1] - y / 2, center[2] + z / 2, 1});
+        corners.push_back(Vector4d{center[0] - x / 2, center[1] - y / 2, center[2] - z / 2, 1});
+        corners.push_back(Vector4d{center[0] - x / 2, center[1] + y / 2, center[2] + z / 2, 1});
+        corners.push_back(Vector4d{center[0] - x / 2, center[1] + y / 2, center[2] - z / 2, 1});
+        init_pose = getTransformMat(EYE(3), center);
     }
-    Camera::Camera(Vector3d center)
+    Camera::Camera(Vector3d center, _R _intrinsics) : intrisics(_intrinsics)
     {
-        corners.push_back(Vector4d(center,1));
-        init_pose = getTransformMat(EYE(3),center);
+        corners.push_back(Vector4d(center, 1));
+        init_pose = getTransformMat(EYE(3), center);
     }
-    
-    void World::emplace(Item &i, int id)
+    std::vector<Point2i> Camera::project(const Item &pw)
     {
-        items.insert(std::pair<int, Item>(id, i));
+        std::vector<Point2i> corners;
+        for (auto corner : pw.corners)
+        {
+            Vector3d temp = this->intrisics * Vector3d{corner[1]/corner[0],corner[2]/corner[0],1};
+            corners.push_back(Point2i(temp));
+        }
+        return corners;
+    }
+    void World::emplace(Camera &i, int id)
+    {
+        Item *j = (Item *)malloc(sizeof(Camera));
+        memcpy(j, &i, sizeof(Camera));
+        items.insert(std::pair<int, Item *>(id, j));
         pose.insert(std::pair<int, _T>(id, i.init_pose));
     }
-    void World::print(int id)
+    void World::emplace(Cube &i, int id)
     {
-        std::cout << id << " coord" << std::endl;
-        std::cout << items.at(id) << std::endl;
-        std::cout << id << " pose" << std::endl;
-        std::cout << pose.at(id) << std::endl;
+        Item *j = (Item *)malloc(sizeof(Cube));
+        memcpy(j, &i, sizeof(Cube));
+        items.insert(std::pair<int, Item *>(id, j));
+        pose.insert(std::pair<int, _T>(id, i.init_pose));
+    }
+
+    Item *World::get(int id)
+    {
+        return items.at(id);
     }
     void World::act(int id, _T t)
     {
         pose[id] = t * pose[id];
-        items.at(id).transform(t);
+        (*items.at(id)).transform(t);
     }
     void World::act(int id, _R r)
     {
         auto t = catRow(catCol(r, Vector3d()), catCol(Vector3d().T(), EYE(1)));
         pose[id] = t * pose[id];
-        items.at(id).transform(t);
+        (*items.at(id)).transform(t);
     }
-    Item World::getCoord(int id, int base)
+    std::vector<Vector4d> World::getCoord(int id, int base)
     {
-        Item it =items.at(id);
+        Item it = *items.at(id);
         it.transform(inv(pose[base]));
-        return it;
+        return it.corners;
     }
 }

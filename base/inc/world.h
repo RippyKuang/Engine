@@ -6,11 +6,12 @@ namespace Engine
     class Item
     {
         friend class World;
+        friend class Camera;
 
     protected:
         _T init_pose;
-        std::vector<Vector4d> corners;
         void transform(_T);
+        std::vector<Vector4d> corners;
 
     public:
         Item(std::vector<Vector4d> _corners) : corners(_corners){};
@@ -24,6 +25,7 @@ namespace Engine
                 output << corner.T();
             return output;
         }
+        
     };
 
     class Cube : public Item
@@ -39,18 +41,20 @@ namespace Engine
         }
         Cube(Vector3d center, double x, double y, double z);
 
-        // std::vector<Point2i> draw();
     };
     class Camera : public Item
     {
+    private:
+        _R intrisics;
     public:
-        Camera(Vector3d center);
+        Camera(Vector3d center, _R _intrinsics);
+        std::vector<Point2i> project(const Item& pw);
     };
 
     class World
     {
     private:
-        std::map<int, Item> items;
+        std::map<int, Item*> items;
         std::map<int, _T> pose;
 
     public:
@@ -58,10 +62,11 @@ namespace Engine
         {
             pose.insert(std::pair<int, _T>(-1, EYE(4)));
         }
-        void emplace(Item &item, int id);
-        void print(int id);
+        void emplace(Cube &item, int id);
+        void emplace(Camera &item, int id);
+        Item *get(int id);
         void act(int id, _T t);
         void act(int id, _R t);
-        Item getCoord(int id, int base=-1);
+        std::vector<Vector4d> getCoord(int id, int base = -1);
     };
 }

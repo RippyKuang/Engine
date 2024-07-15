@@ -1,8 +1,10 @@
+#pragma once
 #include <tuple>
 #include <iostream>
 #include <assert.h>
 #include <initializer_list>
 #include <cstring>
+#include <vector>
 
 #define EYE(x) Engine::eye<double, x>()
 
@@ -32,22 +34,20 @@ namespace Engine
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = m[i];
         }
-        template <int _mRow, int _mCol>
-        Matrix(const Matrix<_Scalar, _mRow, _mCol> &m, _Scalar val = 0)
+        template <typename _mScalar,int _mRow, int _mCol>
+        Matrix(const Matrix<_mScalar, _mRow, _mCol> &m, _Scalar val = 0)
         {
             data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             if (_Rows * _Cols >= _mCol * _mRow)
             {
                 for (int i = 0; i < _mCol * _mRow; i++)
-                    data[i] = m[i];
+                    data[i] = (_Scalar)m[i];
                 for (int i = _mCol * _mRow; i < _Rows * _Cols; i++)
                     data[i] = val;
             }
             else
-            {
                 for (int i = 0; i < _Rows * _Cols; i++)
-                    data[i] = m[i];
-            }
+                    data[i] = (_Scalar)m[i];
         }
         ~Matrix()
         {
@@ -136,7 +136,6 @@ namespace Engine
                 {
                     res[m * _bCol + s] = 0;
                     for (int n = 0; n < _bRow; n++)
-
                         res[m * _bCol + s] += this->data[m * _Cols + n] * b[n * _bCol + s];
                 }
             }
