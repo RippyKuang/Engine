@@ -17,7 +17,7 @@ public:
 int main(int argc, char *argv[])
 {
     Engine::AngleAxis aa(G_PI / 3, Engine::Vector3d{1, 0, 0});
-    Engine::Cube cube(Engine::Vector3d{0.5, 0, 0}, 1, 1, 1);
+    Engine::Cube cube(Engine::Vector3d{0.5, 0, 0}, 0.5, 0.5, 0.5);
     Engine::Camera camera(Engine::Vector3d{-0.5, 0, 0}, Engine::_R{300, 0, 640, 0, 300, 512, 0, 0, 1});
     Engine::World w;
 

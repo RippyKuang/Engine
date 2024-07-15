@@ -66,7 +66,23 @@ namespace Engine
             cairo_arc(cr, w-data[0], h-data[1], 2, 0, 2 * G_PI);
             cairo_fill(cr);
         }
+        CUBE_LINE(0,1);
+        CUBE_LINE(0,2);
+        CUBE_LINE(0,4);
 
+        CUBE_LINE(1,3);
+        CUBE_LINE(1,5);
+        CUBE_LINE(2,3);
+
+        CUBE_LINE(2,6);
+        CUBE_LINE(3,7);
+        CUBE_LINE(4,5);
+
+        CUBE_LINE(4,6);
+        CUBE_LINE(5,7);
+        CUBE_LINE(6,7);
+        cairo_stroke (cr);
+       
         cairo_destroy(cr);
     }
     void GFrame::updateData(std::vector<Point2i> data)
