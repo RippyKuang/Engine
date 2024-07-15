@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
 
     Engine::GFrame frame(argc, argv);
     frame.show();
-
     frame.updateData(projs);
     while (1)
     {
