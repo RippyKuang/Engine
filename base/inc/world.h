@@ -25,7 +25,6 @@ namespace Engine
                 output << corner.T();
             return output;
         }
-        
     };
 
     class Cube : public Item
@@ -40,21 +39,21 @@ namespace Engine
             assert(_corners.size() == 8);
         }
         Cube(Vector3d center, double x, double y, double z);
-
     };
     class Camera : public Item
     {
     private:
         _R intrisics;
+
     public:
         Camera(Vector3d center, _R _intrinsics);
-        std::vector<Point2i> project(const Item& pw);
+        std::vector<Point2i> project(const Item &pw);
     };
 
     class World
     {
     private:
-        std::map<int, Item*> items;
+        std::map<int, Item *> items;
         std::map<int, _T> pose;
 
     public:
@@ -65,8 +64,8 @@ namespace Engine
         void emplace(Cube &item, int id);
         void emplace(Camera &item, int id);
         Item *get(int id);
-        void act(int id, _T t);
-        void act(int id, _R t);
+        void act(int id, _T t, int base = -1);
+        void act(int id, _R t, int base = -1);
         std::vector<Vector4d> getCoord(int id, int base = -1);
     };
 }

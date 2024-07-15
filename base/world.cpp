@@ -15,14 +15,14 @@ namespace Engine
     }
     Cube::Cube(Vector3d center, double x, double y, double z)
     {
-        corners.push_back(Vector4d{center[0] + x / 2, center[1] - y / 2, center[2] + z / 2, 1}); 
-        corners.push_back(Vector4d{center[0] + x / 2, center[1] - y / 2, center[2] - z / 2, 1}); 
-        corners.push_back(Vector4d{center[0] + x / 2, center[1] + y / 2, center[2] + z / 2, 1}); 
+        corners.push_back(Vector4d{center[0] + x / 2, center[1] - y / 2, center[2] + z / 2, 1});
+        corners.push_back(Vector4d{center[0] + x / 2, center[1] - y / 2, center[2] - z / 2, 1});
+        corners.push_back(Vector4d{center[0] + x / 2, center[1] + y / 2, center[2] + z / 2, 1});
         corners.push_back(Vector4d{center[0] + x / 2, center[1] + y / 2, center[2] - z / 2, 1});
 
-        corners.push_back(Vector4d{center[0] - x / 2, center[1] - y / 2, center[2] + z / 2, 1}); 
-        corners.push_back(Vector4d{center[0] - x / 2, center[1] - y / 2, center[2] - z / 2, 1}); 
-        corners.push_back(Vector4d{center[0] - x / 2, center[1] + y / 2, center[2] + z / 2, 1}); 
+        corners.push_back(Vector4d{center[0] - x / 2, center[1] - y / 2, center[2] + z / 2, 1});
+        corners.push_back(Vector4d{center[0] - x / 2, center[1] - y / 2, center[2] - z / 2, 1});
+        corners.push_back(Vector4d{center[0] - x / 2, center[1] + y / 2, center[2] + z / 2, 1});
         corners.push_back(Vector4d{center[0] - x / 2, center[1] + y / 2, center[2] - z / 2, 1});
         init_pose = getTransformMat(EYE(3), center);
     }
@@ -36,7 +36,7 @@ namespace Engine
         std::vector<Point2i> corners;
         for (auto corner : pw.corners)
         {
-            Vector3d temp = this->intrisics * Vector3d{corner[1]/corner[0],corner[2]/corner[0],1};
+            Vector3d temp = this->intrisics * Vector3d{corner[1] / corner[0], corner[2] / corner[0], 1};
             corners.push_back(Point2i(temp));
         }
         return corners;
@@ -60,16 +60,16 @@ namespace Engine
     {
         return items.at(id);
     }
-    void World::act(int id, _T t)
+    void World::act(int id, _T t, int base)
     {
-        pose[id] = t * pose[id];
-        (*items.at(id)).transform(t);
+        pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
+        (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
     }
-    void World::act(int id, _R r)
+    void World::act(int id, _R r, int base)
     {
         auto t = catRow(catCol(r, Vector3d()), catCol(Vector3d().T(), EYE(1)));
-        pose[id] = t * pose[id];
-        (*items.at(id)).transform(t);
+        pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
+        (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {
