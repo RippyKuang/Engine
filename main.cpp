@@ -2,18 +2,6 @@
 #include <iostream>
 #include <world.h>
 
-class A
-{
-public:
-    int a;
-    A(int _a) : a(_a) {}
-};
-class B : public A
-{
-public:
-    int b;
-    B(int _a, int _b) : A(_a), b(_b) {}
-};
 int main(int argc, char *argv[])
 {
     Engine::AngleAxis aa(G_PI / 3, Engine::Vector3d{1, 0, 0});
