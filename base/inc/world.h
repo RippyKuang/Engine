@@ -14,9 +14,9 @@ namespace Engine
         std::vector<Vector4d> corners;
 
     public:
-        Item(std::vector<Vector4d> _corners) : corners(_corners){};
+        Item(std::vector<Vector4d> _corners) : corners(_corners) {};
         Item(std::vector<Vector3d> _corners);
-        Item(){};
+        Item() {};
 
         friend std::ostream &operator<<(std::ostream &output,
                                         const Item &item)
@@ -54,6 +54,7 @@ namespace Engine
     {
     private:
         std::map<int, Item *> items;
+        std::map<int, Camera *> cameras;
         std::map<int, _T> pose;
 
     public:
@@ -64,6 +65,7 @@ namespace Engine
         void emplace(Cube &item, int id);
         void emplace(Camera &item, int id);
         Item *get(int id);
+        Camera &getCamHandle(int id);
         void act(int id, _T t, int base = -1);
         void act(int id, _R t, int base = -1);
         std::vector<Vector4d> getCoord(int id, int base = -1);

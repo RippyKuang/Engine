@@ -43,8 +43,9 @@ namespace Engine
     }
     void World::emplace(Camera &i, int id)
     {
-        Item *j = (Item *)malloc(sizeof(Camera));
+        Camera *j = (Camera *)malloc(sizeof(Camera));
         memcpy(j, &i, sizeof(Camera));
+        cameras.insert(std::pair<int, Camera *>(id, j));
         items.insert(std::pair<int, Item *>(id, j));
         pose.insert(std::pair<int, _T>(id, i.init_pose));
     }
@@ -59,6 +60,10 @@ namespace Engine
     Item *World::get(int id)
     {
         return items.at(id);
+    }
+    Camera &World::getCamHandle(int id)
+    {
+        return *cameras.at(id);
     }
     void World::act(int id, _T t, int base)
     {
