@@ -34,7 +34,7 @@ namespace Engine
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = m[i];
         }
-        template <typename _mScalar,int _mRow, int _mCol>
+        template <typename _mScalar, int _mRow, int _mCol>
         Matrix(const Matrix<_mScalar, _mRow, _mCol> &m, _Scalar val = 0)
         {
             data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
@@ -131,14 +131,12 @@ namespace Engine
             assert(_Cols == _bRow);
             Matrix<T1, _Rows, _bCol> res;
             for (int m = 0; m < _Rows; m++)
-            {
                 for (int s = 0; s < _bCol; s++)
                 {
                     res[m * _bCol + s] = 0;
                     for (int n = 0; n < _bRow; n++)
                         res[m * _bCol + s] += this->data[m * _Cols + n] * b[n * _bCol + s];
                 }
-            }
             return res;
         }
 

@@ -41,14 +41,7 @@ namespace Engine
         }
         return corners;
     }
-    void World::emplace(Camera &i, int id)
-    {
-        Camera *j = (Camera *)malloc(sizeof(Camera));
-        memcpy(j, &i, sizeof(Camera));
-        cameras.insert(std::pair<int, Camera *>(id, j));
-        items.insert(std::pair<int, Item *>(id, j));
-        pose.insert(std::pair<int, _T>(id, i.init_pose));
-    }
+
     void World::emplace(Cube &i, int id)
     {
         Item *j = (Item *)malloc(sizeof(Cube));
@@ -57,14 +50,6 @@ namespace Engine
         pose.insert(std::pair<int, _T>(id, i.init_pose));
     }
 
-    Item *World::get(int id)
-    {
-        return items.at(id);
-    }
-    Camera &World::getCamHandle(int id)
-    {
-        return *cameras.at(id);
-    }
     void World::act(int id, _T t, int base)
     {
         pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
@@ -75,6 +60,19 @@ namespace Engine
         auto t = catRow(catCol(r, Vector3d()), catCol(Vector3d().T(), EYE(1)));
         pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
         (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+    }
+    std::vector<Point2i> World::project()
+    {
+        std::map<int, Item *>::iterator iter = items.begin();
+        std::vector<Point2i> projs;
+        while (iter != items.end())
+        {
+            Item cube_in_camera = getCoord(iter->first, -2);
+            std::vector<Point2i> tprojs = cam.project(cube_in_camera);
+            projs.insert(projs.end(), tprojs.begin(), tprojs.end());
+            iter++;
+        }
+        return projs;
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {
