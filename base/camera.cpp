@@ -7,20 +7,16 @@ namespace Engine
         corners.push_back(Vector4d(center, 1));
         init_pose = getTransformMat(EYE(3), center);
     }
-    
-    std::vector<Point2i> Camera::project(Item &pw)
+
+    std::vector<Point2i> Camera::project(std::vector<Vector3d> &pw, std::vector<bool> &visible, bool keep_all)
     {
         std::vector<Point2i> corners;
-        std::vector<Vector4d> new_corners = remove_hidden(pw.corners);
-        for (auto corner : new_corners)
-        {
-            if (corner[2] == -1)
-            {
-                corners.push_back(Point2i{-1, -1});
-                continue;
-            }
 
-            Vector3d temp = this->intrisics * Vector3d{corner[1] / corner[0], corner[2] / corner[0], 1};
+        for (int i = 0; i < pw.size(); i++)
+        {
+            if(!visible[i] && !keep_all)
+                continue;
+            Vector3d temp = this->intrisics * Vector3d{pw[i][1] / pw[i][0], pw[i][2] / pw[i][0], 1};
             corners.push_back(Point2i(temp));
         }
         return corners;

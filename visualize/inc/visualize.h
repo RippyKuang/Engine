@@ -15,7 +15,7 @@ namespace Engine
 #define CUBE_LINE(a, b, c)                                                                                                \
     do                                                                                                                    \
     {                                                                                                                     \
-        if (datas[a + c * 8][0] != -1 && datas[b + c * 8][0] != -1)                                                       \
+        if (datas[a + c * 8][0] != -99 && datas[b + c * 8][0] != -99)                                               \
             LINE(w - datas[a + c * 8][0], h - datas[a + c * 8][1], w - datas[b + c * 8][0], h - datas[b + c * 8][1], cr); \
         cairo_stroke(cr);                                                                                                 \
     } while (0)

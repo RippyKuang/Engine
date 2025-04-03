@@ -5,7 +5,6 @@
 namespace Engine
 {
 
-
     class World
     {
     private:
@@ -13,6 +12,7 @@ namespace Engine
         std::map<int, _T> pose;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
+        std::vector<Vector3d> discrete(std::vector<Vector3d> &, std::vector<Point2i> &, std::vector<bool> &);
 
     public:
         World(Camera &_cam) : cam(_cam)
@@ -25,4 +25,5 @@ namespace Engine
         void act(int id, _R t, int base = -1);
         std::vector<Point2i> project();
     };
+
 }

@@ -63,36 +63,36 @@ namespace Engine
         cairo_set_source_rgb(cr, 0, 0, 0);
         for (auto data : datas)
         {
-            cairo_arc(cr, w - data[0], h - data[1], 2, 0, 2 * G_PI);
+            cairo_arc(cr, w - data[0], h - data[1], 1, 0, 2 * G_PI);
             cairo_fill(cr);
         }
-        for (int b = 0; b < datas.size() / 8; b++)
-        {   
+        // for (int b = 0; b < datas.size() / 8; b++)
+        // {   
 
-            CUBE_LINE(0, 1, b);
-            CUBE_LINE(0, 2, b);
-            CUBE_LINE(0, 4, b);
+        //     CUBE_LINE(0, 1, b);
+        //     CUBE_LINE(0, 2, b);
+        //     CUBE_LINE(0, 4, b);
 
-            CUBE_LINE(1, 3, b);
-            CUBE_LINE(1, 5, b);
-            CUBE_LINE(2, 3, b);
+        //     CUBE_LINE(1, 3, b);
+        //     CUBE_LINE(1, 5, b);
+        //     CUBE_LINE(2, 3, b);
 
-            CUBE_LINE(2, 6, b);
-            CUBE_LINE(3, 7, b);
-            CUBE_LINE(4, 5, b);
+        //     CUBE_LINE(2, 6, b);
+        //     CUBE_LINE(3, 7, b);
+        //     CUBE_LINE(4, 5, b);
 
-            CUBE_LINE(4, 6, b);
-            CUBE_LINE(5, 7, b);
-            CUBE_LINE(6, 7, b);
-        }
-       
-
+        //     CUBE_LINE(4, 6, b);
+        //     CUBE_LINE(5, 7, b);
+        //     CUBE_LINE(6, 7, b);
+        // }
+    
         cairo_destroy(cr);
     }
     void GFrame::updateData(std::vector<Point2i> data)
     {
         this->datas = data;
     }
+    
     GFrame::GFrame(int argc, char *argv[])
     {
         gtk_init(&argc, &argv);

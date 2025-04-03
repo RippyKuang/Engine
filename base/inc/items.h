@@ -25,6 +25,7 @@ namespace Engine
                 output << corner.T();
             return output;
         }
+    
     };
 
     class Cube : public Item
