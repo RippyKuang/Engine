@@ -13,14 +13,30 @@ namespace Engine
 
     void World::act(int id, _T t, int base)
     {
-        pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
-        (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+        if (id != base)
+        {
+            pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
+            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+        }
+        else
+        {
+            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+            pose[id] = pose[base] * t;
+        }
     }
     void World::act(int id, _R r, int base)
     {
         auto t = catRow(catCol(r, Vector3d()), catCol(Vector3d().T(), EYE(1)));
-        pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
-        (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+        if (id != base)
+        {
+            pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
+            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+        }
+        else
+        {
+            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+            pose[id] = pose[base] * t;
+        }
     }
 
     std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
