@@ -51,11 +51,11 @@ namespace Engine
         Vector3d N = cross(B - A, C - A);
         double denom = dot(N, P);
         if (denom == 0)
-            return false;
+            return Vector3d{_FALSE, _FALSE, _FALSE};
 
         double t = dot(N, A) / denom;
         if (t < 0 || t > 1)
-            return false;
+            return Vector3d{_FALSE, _FALSE, _FALSE};
 
         Vector3d intersection = Vector3d{P[0] * t, P[1] * t, P[2] * t};
         return intersection;
@@ -64,12 +64,16 @@ namespace Engine
     bool LineIntersectTriangle(Vector3d &P, Vector3d &A, Vector3d &B, Vector3d &C)
     {
         Vector3d intersection = intersectLinePlane(P, A, B, C);
+        if (intersection[0] == _FALSE)
+            return false;
         return isPointInTriangle(intersection, A, B, C);
     }
 
     bool LineIntersectQuadrilateral(Vector3d &P, Vector3d &A, Vector3d &B, Vector3d &C, Vector3d &D)
     {
         Vector3d intersection = intersectLinePlane(P, A, B, C);
+        if (intersection[0] == _FALSE)
+            return false;
         return isPointInTriangle(intersection, A, B, C) || isPointInTriangle(intersection, A, C, D);
     }
 
@@ -91,6 +95,14 @@ namespace Engine
 
     void remove_self_hidden(std::vector<Vector3d> &corners, std::vector<bool> &visible)
     {
+
+#define CHECK_SELF_HIDDEN(p, pa, pb, pc)                                              \
+    do                                                                                \
+    {                                                                                 \
+        if (LineIntersectTriangle(corners[p], corners[pa], corners[pb], corners[pc])) \
+            visible[p] = false;                                                       \
+    } while (0)
+
         CHECK_SELF_HIDDEN(0, 1, 2, 4);
         CHECK_SELF_HIDDEN(1, 0, 3, 5);
         CHECK_SELF_HIDDEN(2, 3, 6, 0);
@@ -99,6 +111,7 @@ namespace Engine
         CHECK_SELF_HIDDEN(5, 7, 1, 4);
         CHECK_SELF_HIDDEN(6, 7, 4, 2);
         CHECK_SELF_HIDDEN(7, 5, 6, 3);
+#undef CHECK_SELF_HIDDEN
     }
 
     void remove_inter_hidden(std::vector<Vector3d> &corners, std::vector<Vector3d> &item, std::vector<bool> &visible)
