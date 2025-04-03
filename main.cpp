@@ -1,6 +1,7 @@
 #include <visualize.h>
 #include <iostream>
 #include <world.h>
+#include <unistd.h>
 
 int main(int argc, char *argv[])
 {
@@ -22,6 +23,7 @@ int main(int argc, char *argv[])
     frame.show();
 
     frame.updateData(projs);
+
     while (1)
     {
     }

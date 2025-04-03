@@ -67,7 +67,8 @@ namespace Engine
             cairo_fill(cr);
         }
         for (int b = 0; b < datas.size() / 8; b++)
-        {
+        {   
+
             CUBE_LINE(0, 1, b);
             CUBE_LINE(0, 2, b);
             CUBE_LINE(0, 4, b);
@@ -84,7 +85,7 @@ namespace Engine
             CUBE_LINE(5, 7, b);
             CUBE_LINE(6, 7, b);
         }
-        cairo_stroke(cr);
+       
 
         cairo_destroy(cr);
     }

@@ -12,10 +12,12 @@ namespace Engine
         cairo_move_to(e, a, b); \
         cairo_line_to(e, c, d); \
     } while (0)
-#define CUBE_LINE(a, b, c)                                                                                            \
-    do                                                                                                                \
-    {                                                                                                                 \
-        LINE(w - datas[a + c * 8][0], h - datas[a + c * 8][1], w - datas[b + c * 8][0], h - datas[b + c * 8][1], cr); \
+#define CUBE_LINE(a, b, c)                                                                                                \
+    do                                                                                                                    \
+    {                                                                                                                     \
+        if (datas[a + c * 8][0] != -1 && datas[b + c * 8][0] != -1)                                                       \
+            LINE(w - datas[a + c * 8][0], h - datas[a + c * 8][1], w - datas[b + c * 8][0], h - datas[b + c * 8][1], cr); \
+        cairo_stroke(cr);                                                                                                 \
     } while (0)
     class GFrame
     {

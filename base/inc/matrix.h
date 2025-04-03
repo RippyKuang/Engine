@@ -76,6 +76,7 @@ namespace Engine
 
             return m;
         }
+     
         Matrix operator+(const Matrix &b)
         {
             Matrix<_Scalar, _Rows, _Cols> m;
@@ -83,6 +84,7 @@ namespace Engine
                 m[x] = this->data[x] + b[x];
             return m;
         }
+        
         Matrix operator-(const Matrix &b)
         {
             Matrix<_Scalar, _Rows, _Cols> m;
@@ -177,6 +179,19 @@ namespace Engine
         hat_m[7] = m[0];
         return hat_m;
     }
+
+    template <typename T>
+    Matrix<T, 3, 1> cross(const Matrix<T, 3, 1> &a, const Matrix<T, 3, 1> &b)
+    {
+        return Matrix<T, 3, 1>{a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
+    }
+
+    template <typename T>
+    T dot(const Matrix<T, 3, 1> &a, const Matrix<T, 3, 1> &b)
+    {
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    }
+
     template <typename T, int L>
     Matrix<T, L, L> eye()
     {
