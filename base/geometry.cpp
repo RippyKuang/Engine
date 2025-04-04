@@ -120,12 +120,12 @@ namespace Engine
         {
             Vector3d p = corners[i];
 
-            if (LineIntersectQuadrilateral(p, item[0], item[1], item[4], item[5]) ||
-                LineIntersectQuadrilateral(p, item[0], item[1], item[2], item[3]) ||
+            if (LineIntersectQuadrilateral(p, item[0], item[1], item[5], item[4]) ||
+                LineIntersectQuadrilateral(p, item[0], item[1], item[3], item[2]) ||
                 LineIntersectQuadrilateral(p, item[0], item[4], item[6], item[2]) ||
                 LineIntersectQuadrilateral(p, item[2], item[6], item[7], item[3]) ||
                 LineIntersectQuadrilateral(p, item[4], item[6], item[7], item[5]) ||
-                LineIntersectQuadrilateral(p, item[1], item[3], item[5], item[7]))
+                LineIntersectQuadrilateral(p, item[1], item[3], item[7], item[5]))
                 visible[i] = false;
         }
     }

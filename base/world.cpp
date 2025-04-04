@@ -42,16 +42,15 @@ namespace Engine
     std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
     {
 
-#define DISCRETE_LINE(a, b)                                                                                                       \
-    do                                                                                                                            \
-    {                                                                                                                             \
-        if (vis[a] && vis[b])                                                                                                     \
-        {                                                                                                                         \
-            int CNT = std::floor(std::sqrt(std::pow(tprojs[a][0] - tprojs[b][0], 2) + std::pow(tprojs[a][1] - tprojs[b][1], 2))); \
-            for (int i = 0; i <= CNT; i++)                                                                                        \
-                discreted_pw.push_back(pw[a] + ((pw[b] - pw[a]) / CNT) * i);                                                      \
-        }                                                                                                                         \
-    } while (0)
+#define DISCRETE_LINE(a, b)                                                                                                      \
+    do                                                                                                                           \
+        if (vis[a] && vis[b])                                                                                                    \
+        {                                                                                                                        \
+            int CNT = std::ceil(std::sqrt(std::pow(tprojs[a][0] - tprojs[b][0], 2) + std::pow(tprojs[a][1] - tprojs[b][1], 2))); \
+            for (int i = 0; i <= CNT; i++)                                                                                       \
+                discreted_pw.push_back(pw[a] + ((pw[b] - pw[a]) / CNT) * i);                                                     \
+        }                                                                                                                        \
+    while (0)
 
 #define PART_DISCRETE(a, b, c, d) \
     do                            \
