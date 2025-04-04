@@ -38,7 +38,7 @@ namespace Engine
             pose[id] = pose[base] * t;
         }
     }
-
+     
     std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
     {
 

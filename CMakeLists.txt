@@ -6,6 +6,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 add_subdirectory(visualize)
 add_subdirectory(base)
+add_subdirectory(robotic)
 add_executable(engine main.cpp)
 
 target_link_libraries(engine PUBLIC visual base)
@@ -13,5 +14,6 @@ target_include_directories(engine PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/visualize/inc"
                           "${PROJECT_SOURCE_DIR}/base/inc"
+                          "${PROJECT_SOURCE_DIR}/robotic/inc"
                           ${GTK3_INCLUDE_DIRS}
                           )

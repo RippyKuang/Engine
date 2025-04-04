@@ -25,7 +25,6 @@ namespace Engine
                 output << corner.T();
             return output;
         }
-    
     };
 
     class Cube : public Item
@@ -39,6 +38,6 @@ namespace Engine
         {
             assert(_corners.size() == 8);
         }
-        Cube(Vector3d center, double x, double y, double z);
+        Cube(Vector3d box, Vector3d xyz = Vector3d{0, 0, 0}, Vector3d rpy = Vector3d{0, 0, 0});
     };
 }

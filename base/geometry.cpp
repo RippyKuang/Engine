@@ -12,6 +12,19 @@ namespace Engine
         return catRow(catCol(aa, t), catCol(Vector3d().T(), EYE(1)));
     }
 
+    _R rpy2rot(Vector3d rpy)
+    {
+        double c1 = std::cos(rpy[0]);
+        double s1 = std::sin(rpy[0]);
+        double c2 = std::cos(rpy[1]);
+        double s2 = std::sin(rpy[1]);
+        double c3 = std::cos(rpy[2]);
+        double s3 = std::sin(rpy[2]);
+        return _R{c2 * c3, c1 * s3 + s1 * s2 * c3, s1 * s3 - c1 * s2 * c3,
+                  -c2 * s3, c1 * c3 - s1 * s2 * s3, s1 * c3 + c1 * s2 * s3,
+                  s2, -s1 * c2, c1 * c2};
+    }
+
     _T inv(_T t)
     {
         _R r;
@@ -23,6 +36,7 @@ namespace Engine
             vec[x] = t[x * 4 + 3];
         return getTransformMat(r.T(), r.T() * vec * (-1));
     }
+
     _R AngleAxis::toRotationMat()
     {
         return EYE(3) * std::cos(angle) + axis * axis.T() * (1 - std::cos(angle)) + hat(axis) * std::sin(angle);
