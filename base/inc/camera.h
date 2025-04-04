@@ -2,7 +2,7 @@
 
 namespace Engine
 {
-    class Camera : public Item
+    class Camera : public Link
     {
     private:
         _R intrisics;

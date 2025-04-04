@@ -2,13 +2,13 @@
 
 namespace Engine
 {
-    void Item::transform(_T t)
+    void Link::transform(_T t)
     {
         for (auto it = this->corners.begin(); it != this->corners.end(); it++)
             *it = t * (*it);
     }
 
-    Item::Item(std::vector<Vector3d> _corners)
+    Link::Link(std::vector<Vector3d> _corners)
     {
         for (auto corner : _corners)
             this->corners.push_back(Vector4d(corner, 1));

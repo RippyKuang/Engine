@@ -3,10 +3,11 @@
 
 namespace Engine
 {
-    class Item
+    class Link
     {
         friend class World;
         friend class Camera;
+        friend class Joint;
 
     protected:
         _T init_pose;
@@ -14,27 +15,27 @@ namespace Engine
         std::vector<Vector4d> corners;
 
     public:
-        Item(std::vector<Vector4d> _corners) : corners(_corners) {};
-        Item(std::vector<Vector3d> _corners);
-        Item() {};
+        Link(std::vector<Vector4d> _corners) : corners(_corners) {};
+        Link(std::vector<Vector3d> _corners);
+        Link() {};
 
         friend std::ostream &operator<<(std::ostream &output,
-                                        const Item &item)
+                                        const Link &link)
         {
-            for (auto corner : item.corners)
+            for (auto corner : link.corners)
                 output << corner.T();
             return output;
         }
     };
 
-    class Cube : public Item
+    class Cube : public Link
     {
     public:
-        Cube(std::vector<Vector4d> _corners) : Item(_corners)
+        Cube(std::vector<Vector4d> _corners) : Link(_corners)
         {
             assert(_corners.size() == 8);
         }
-        Cube(std::vector<Vector3d> _corners) : Item(_corners)
+        Cube(std::vector<Vector3d> _corners) : Link(_corners)
         {
             assert(_corners.size() == 8);
         }

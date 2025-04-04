@@ -5,10 +5,16 @@ namespace Engine
 
     void World::emplace(Cube &i, int id)
     {
-        Item *j = (Item *)malloc(sizeof(Cube));
+        Link *j = (Link *)malloc(sizeof(Cube));
         memcpy(j, &i, sizeof(Cube));
-        items.insert(std::pair<int, Item *>(id, j));
+        links.insert(std::pair<int, Link *>(id, j));
         pose.insert(std::pair<int, _T>(id, i.init_pose));
+    }
+    void World::emplace(Joint &i)
+    {
+        Joint *j = (Joint *)malloc(sizeof(Joint));
+        memcpy(j, &i, sizeof(Joint));
+        joints.insert(std::pair<int, Joint *>(i.get_id(), j));
     }
 
     void World::act(int id, _T t, int base)
@@ -16,11 +22,11 @@ namespace Engine
         if (id != base)
         {
             pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
-            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+            (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
         }
         else
         {
-            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+            (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
             pose[id] = pose[base] * t;
         }
     }
@@ -30,15 +36,15 @@ namespace Engine
         if (id != base)
         {
             pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
-            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+            (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
         }
         else
         {
-            (*items.at(id)).transform((pose[base] * t * inv(pose[base])));
+            (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
             pose[id] = pose[base] * t;
         }
     }
-     
+
     std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
     {
 
@@ -74,10 +80,10 @@ namespace Engine
     }
     std::vector<Point2i> World::project()
     {
-        std::map<int, Item *>::iterator _iter = items.begin();
+        std::map<int, Link *>::iterator _iter = links.begin();
         std::vector<std::vector<Vector3d>> cubes;
         std::vector<Point2i> projs;
-        while (_iter != items.end())
+        while (_iter != links.end())
         {
             cubes.push_back(to_3d(getCoord(_iter->first, -2)));
             _iter++;
@@ -106,8 +112,42 @@ namespace Engine
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {
-        Item it = *items.at(id);
+        Link it = *links.at(id);
         it.transform(inv(pose[base]));
         return it.corners;
+    }
+
+    void World::parse_robot(std::vector<Joint> &joints)
+    {
+
+        for (auto joint : joints)
+            emplace(joint);
+
+        graph.add_child(joints[0].id);
+        std::unordered_map<Cube *, int> map;
+        int link_cnt = 0;
+
+        auto joint_iter = joints.begin();
+        emplace(joint_iter->parent_link, link_cnt++);
+        map.insert({&joint_iter->parent_link, joints[0].id});
+
+        for (auto l : joint_iter->child_link)
+        {
+            emplace(l, link_cnt++);
+            map.insert({&l, joints[0].id});
+        }
+        joint_iter++;
+
+        while (joint_iter != joints.end())
+        {
+            int parent_id = map[&joint_iter->parent_link];
+            graph.insert(parent_id, joint_iter->id);
+
+            for (auto l : joint_iter->child_link)
+            {
+                emplace(l, link_cnt++);
+                map.insert({&l, joint_iter->id});
+            }
+        }
     }
 }
