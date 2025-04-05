@@ -147,9 +147,8 @@ namespace Engine
             for (auto l : joint_iter->child_link)
             {
                 emplace(*l, link_cnt);
-                act(link_cnt, getTransformMat(EYE(3), graph.find(parent_id)->get_origin()));
+                act(link_cnt++, getTransformMat(EYE(3), graph.find(parent_id)->get_origin()));
                 link2parent_joint.insert({l, joint_iter->id});
-                link_cnt++;
             }
             joint_iter++;
         }
