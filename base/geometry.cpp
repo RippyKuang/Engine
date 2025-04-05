@@ -68,7 +68,7 @@ namespace Engine
             return Vector3d{_FALSE, _FALSE, _FALSE};
 
         double t = dot(N, A) / denom;
-        if (t < 0 || t > 1)
+        if (t <= 0 || t >= 1)
             return Vector3d{_FALSE, _FALSE, _FALSE};
 
         Vector3d intersection = Vector3d{P[0] * t, P[1] * t, P[2] * t};

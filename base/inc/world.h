@@ -5,14 +5,13 @@
 #include <unordered_map>
 namespace Engine
 {
-
     class World
     {
         
     private:
         std::map<int, Link *> links;
         std::map<int, _T> pose;
-        std::map<int, Joint *> joints;
+        std::map<int, Joint *> total_joints;
         Joint_node graph;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
@@ -25,10 +24,10 @@ namespace Engine
             pose.insert(std::pair<int, _T>(-2, _cam.init_pose));
         }
         void emplace(Cube &item, int id);
-        void World::emplace(Joint &i);
+        void emplace(Joint &i);
         void act(int id, _T t, int base = -1);
         void act(int id, _R t, int base = -1);
-        void parse_robot(std::vector<Joint>&);
+        void parse_robot(std::initializer_list<Joint>);
         std::vector<Point2i> project();
     };
 

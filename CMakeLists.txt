@@ -9,7 +9,7 @@ add_subdirectory(base)
 add_subdirectory(robotic)
 add_executable(engine main.cpp)
 
-target_link_libraries(engine PUBLIC visual base)
+target_link_libraries(engine PUBLIC visual base robot)
 target_include_directories(engine PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/visualize/inc"

@@ -14,7 +14,8 @@ namespace Engine
     {
         Joint *j = (Joint *)malloc(sizeof(Joint));
         memcpy(j, &i, sizeof(Joint));
-        joints.insert(std::pair<int, Joint *>(i.get_id(), j));
+        j->origin = i.origin;
+        total_joints.insert(std::pair<int, Joint *>(i.id, j));
     }
 
     void World::act(int id, _T t, int base)
@@ -117,37 +118,41 @@ namespace Engine
         return it.corners;
     }
 
-    void World::parse_robot(std::vector<Joint> &joints)
+    void World::parse_robot(std::initializer_list<Joint> joints)
     {
 
         for (auto joint : joints)
             emplace(joint);
 
-        graph.add_child(joints[0].id);
+        const Joint *base_joint = joints.begin();
+        graph.add_child(base_joint->id);
         std::unordered_map<Cube *, int> map;
         int link_cnt = 0;
 
         auto joint_iter = joints.begin();
-        emplace(joint_iter->parent_link, link_cnt++);
-        map.insert({&joint_iter->parent_link, joints[0].id});
+        emplace(*joint_iter->parent_link, link_cnt++);
+        map.insert({joint_iter->parent_link, base_joint->id});
 
         for (auto l : joint_iter->child_link)
         {
-            emplace(l, link_cnt++);
-            map.insert({&l, joints[0].id});
+            emplace(*l, link_cnt++);
+            map.insert({l, base_joint->id});
         }
         joint_iter++;
-
+        Vector3d origin{0, 0, 0};
         while (joint_iter != joints.end())
         {
-            int parent_id = map[&joint_iter->parent_link];
+            int parent_id = map[joint_iter->parent_link];
             graph.insert(parent_id, joint_iter->id);
-
+            origin = origin + this->total_joints[parent_id]->origin;
             for (auto l : joint_iter->child_link)
             {
-                emplace(l, link_cnt++);
-                map.insert({&l, joint_iter->id});
+                emplace(*l, link_cnt);
+                act(link_cnt, getTransformMat(EYE(3), origin));
+                map.insert({l, joint_iter->id});
+                link_cnt++;
             }
+            joint_iter++;
         }
     }
 }
