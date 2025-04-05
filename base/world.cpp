@@ -15,7 +15,7 @@ namespace Engine
         Joint *j = (Joint *)malloc(sizeof(Joint));
         memcpy(j, &i, sizeof(Joint));
         j->origin = i.origin;
-        total_joints.insert(std::pair<int, Joint *>(i.id, j));
+        joints.insert(std::pair<int, Joint *>(i.id, j));
     }
 
     void World::act(int id, _T t, int base)
@@ -118,18 +118,18 @@ namespace Engine
         return it.corners;
     }
 
-    void World::parse_robot(std::initializer_list<Joint> joints)
+    void World::parse_robot(std::initializer_list<Joint> jo)
     {
 
-        for (auto joint : joints)
+        for (auto joint : jo)
             emplace(joint);
 
-        const Joint *base_joint = joints.begin();
+        const Joint *base_joint = jo.begin();
         graph.add_child(base_joint->id);
         std::unordered_map<Cube *, int> map;
         int link_cnt = 0;
 
-        auto joint_iter = joints.begin();
+        auto joint_iter = jo.begin();
         emplace(*joint_iter->parent_link, link_cnt++);
         map.insert({joint_iter->parent_link, base_joint->id});
 
@@ -140,11 +140,11 @@ namespace Engine
         }
         joint_iter++;
         Vector3d origin{0, 0, 0};
-        while (joint_iter != joints.end())
+        while (joint_iter != jo.end())
         {
             int parent_id = map[joint_iter->parent_link];
             graph.insert(parent_id, joint_iter->id);
-            origin = origin + this->total_joints[parent_id]->origin;
+            origin = origin + this->joints[parent_id]->origin;
             for (auto l : joint_iter->child_link)
             {
                 emplace(*l, link_cnt);

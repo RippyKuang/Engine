@@ -11,7 +11,7 @@ namespace Engine
     private:
         std::map<int, Link *> links;
         std::map<int, _T> pose;
-        std::map<int, Joint *> total_joints;
+        std::map<int, Joint *> joints;
         Joint_node graph;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
