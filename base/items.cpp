@@ -14,7 +14,7 @@ namespace Engine
             this->corners.push_back(Vector4d(corner, 1));
     }
 
-    Cube::Cube(Vector3d box, Vector3d xyz, Vector3d rpy)
+    Cube::Cube(Vector3d box, Vector3d rpy, Vector3d xyz)
     {
         double x = box[0];
         double y = box[1];

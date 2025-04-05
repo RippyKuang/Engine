@@ -8,9 +8,9 @@ namespace Engine
         child_link.push_back(&link);
     }
 
-    void Joint_node::add_child(int id)
+    void Joint_node::add_child(int id, Vector3d _origin)
     {
-        Joint_node *j = new Joint_node(id);
+        Joint_node *j = new Joint_node(id,_origin+this->origin);
         childs.push_back(j);
     }
     Joint_node *Joint_node::find(int id)
@@ -26,9 +26,13 @@ namespace Engine
             }
             return NULL;
     }
-    void Joint_node::insert(int parent, int id)
+    void Joint_node::insert(int parent, int id, Vector3d origin)
     {
         Joint_node *tgt = this->find(parent);
-        tgt->add_child(id);
+        tgt->add_child(id, origin);
+    }
+    Vector3d Joint_node::get_origin()const
+    {
+        return this->origin;
     }
 }

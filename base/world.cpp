@@ -125,31 +125,30 @@ namespace Engine
             emplace(joint);
 
         const Joint *base_joint = jo.begin();
-        graph.add_child(base_joint->id);
-        std::unordered_map<Cube *, int> map;
+        graph.add_child(base_joint->id,base_joint->origin);
+        std::unordered_map<Cube *, int> link2parent_joint;
         int link_cnt = 0;
 
         auto joint_iter = jo.begin();
         emplace(*joint_iter->parent_link, link_cnt++);
-        map.insert({joint_iter->parent_link, base_joint->id});
+        link2parent_joint.insert({joint_iter->parent_link, base_joint->id});
 
         for (auto l : joint_iter->child_link)
         {
             emplace(*l, link_cnt++);
-            map.insert({l, base_joint->id});
+            link2parent_joint.insert({l, base_joint->id});
         }
         joint_iter++;
-        Vector3d origin{0, 0, 0};
+   
         while (joint_iter != jo.end())
         {
-            int parent_id = map[joint_iter->parent_link];
-            graph.insert(parent_id, joint_iter->id);
-            origin = origin + this->joints[parent_id]->origin;
+            int parent_id = link2parent_joint[joint_iter->parent_link];
+            graph.insert(parent_id, joint_iter->id, joint_iter->origin);
             for (auto l : joint_iter->child_link)
             {
                 emplace(*l, link_cnt);
-                act(link_cnt, getTransformMat(EYE(3), origin));
-                map.insert({l, joint_iter->id});
+                act(link_cnt, getTransformMat(EYE(3), graph.find(parent_id)->get_origin()));
+                link2parent_joint.insert({l, joint_iter->id});
                 link_cnt++;
             }
             joint_iter++;
