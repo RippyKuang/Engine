@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
     Joint j0(base_link, link0, Vector3d{0, 0, 0.125}, 0);
     Joint j1(link0, link1, Vector3d{0, -0.1, 0.125}, 1);
-    Joint j2(link0, link2, Vector3d{0, +0.1, 0.125}, 2);
+    Joint j2(link1, link2, Vector3d{0, -0.2, 0}, 2);
 
     w.parse_robot({j0,j1,j2});
     std::vector<Engine::Point2i> projs = w.project();
