@@ -10,13 +10,6 @@ namespace Engine
         links.insert(std::pair<int, Link *>(id, j));
         pose.insert(std::pair<int, _T>(id, i.init_pose));
     }
-    void World::emplace(Joint &i)
-    {
-        Joint *j = (Joint *)malloc(sizeof(Joint));
-        memcpy(j, &i, sizeof(Joint));
-        j->origin = i.origin;
-        joints.insert(std::pair<int, Joint *>(i.id, j));
-    }
 
     void World::act(int id, _T t, int base)
     {
@@ -44,6 +37,28 @@ namespace Engine
             (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
             pose[id] = pose[base] * t;
         }
+    }
+    double World::drive(int id, double inc)
+    {
+        Joint_node *tgt = graph.find(id);
+        INFO *info = tgt->get_info();
+        
+        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2,-1);
+
+        if (info->type == FIXED)
+            throw "Driving a fixed joint!";
+        if (info->type == REVOLUTE)
+        {
+            REVOLUTE_INFO *pinfo = static_cast<REVOLUTE_INFO *>(info);
+            if ((pinfo->pos + inc >= pinfo->min_rad) && (pinfo->pos + inc <= pinfo->max_rad))
+                return Joint::forward(links, tgt, inc, act_func);
+            else
+                return _FALSE;
+        }
+        if (info->type == CONTINUOUS)
+            return Joint::forward(links, tgt, inc, act_func);
+
+        throw "unknown joint!";
     }
 
     std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
@@ -121,34 +136,40 @@ namespace Engine
     void World::parse_robot(std::initializer_list<Joint> jo)
     {
 
-        for (auto joint : jo)
-            emplace(joint);
-
         const Joint *base_joint = jo.begin();
-        graph.add_child(base_joint->id,base_joint->origin);
-        std::unordered_map<Cube *, int> link2parent_joint;
         int link_cnt = 0;
 
+        Joint_node *curr_node = graph.add_child(base_joint);
+        std::unordered_map<Cube *, int> link2parent_joint;
+        std::unordered_map<Cube *, int> link2link_id;
+
         auto joint_iter = jo.begin();
-        emplace(*joint_iter->parent_link, link_cnt++);
+        curr_node->set_parent_link_id(link_cnt);
+        emplace(*joint_iter->parent_link, link_cnt);
+        link2link_id.insert({joint_iter->parent_link, link_cnt++});
         link2parent_joint.insert({joint_iter->parent_link, base_joint->id});
 
         for (auto l : joint_iter->child_link)
         {
-            emplace(*l, link_cnt++);
+            emplace(*l, link_cnt);
+            curr_node->append_child_link_id(link_cnt);
+            link2link_id.insert({l, link_cnt++});
             link2parent_joint.insert({l, base_joint->id});
         }
         joint_iter++;
-   
+
         while (joint_iter != jo.end())
         {
             int parent_id = link2parent_joint[joint_iter->parent_link];
-            graph.insert(parent_id, joint_iter->id, joint_iter->origin);
+            curr_node = graph.insert(parent_id, joint_iter);
+            curr_node->set_parent_link_id(link2link_id[joint_iter->parent_link]);
             for (auto l : joint_iter->child_link)
             {
                 emplace(*l, link_cnt);
-                act(link_cnt++, getTransformMat(EYE(3), graph.find(parent_id)->get_origin()));
+                curr_node->append_child_link_id(link_cnt);
+                link2link_id.insert({l, link_cnt});
                 link2parent_joint.insert({l, joint_iter->id});
+                act(link_cnt++, getTransformMat(EYE(3), graph.find(parent_id)->get_origin()));
             }
             joint_iter++;
         }

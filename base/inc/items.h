@@ -8,6 +8,7 @@ namespace Engine
     {
         friend class World;
         friend class Camera;
+        friend class Joint_node;
         friend class Joint;
 
     protected:

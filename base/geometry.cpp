@@ -1,5 +1,4 @@
 #include <geometry.h>
-#include <marcos.h>
 
 namespace Engine
 {
@@ -142,6 +141,81 @@ namespace Engine
                 LineIntersectQuadrilateral(p, item[1], item[3], item[7], item[5]))
                 visible[i] = false;
         }
+    }
+
+    Quaternion rotationMatrixToQuaternion(const _R &m)
+    {
+        Quaternion q;
+        double trace = m[0] + m[1 * 3 + 1] + m[2 * 3 + 2];
+
+        if (trace > 0.0)
+        {
+            double s = 0.5 / std::sqrt(trace + 1.0);
+            q.w = 0.25 / s;
+            q.x = (m[2 * 3 + 1] - m[1 * 3 + 2]) * s;
+            q.y = (m[0 * 3 + 2] - m[2 * 3 + 0]) * s;
+            q.z = (m[1 * 3 + 0] - m[0 * 3 + 1]) * s;
+        }
+        else
+        {
+            if (m[0 * 3 + 0] > m[1 * 3 + 1] && m[0 * 3 + 0] > m[2 * 3 + 2])
+            {
+                double s = 2.0 * std::sqrt(1.0 + m[0 * 3 + 0] - m[1 * 3 + 1] - m[2 * 3 + 2]);
+                q.w = (m[2 * 3 + 1] - m[1 * 3 + 2]) / s;
+                q.x = 0.25 * s;
+                q.y = (m[0 * 3 + 1] + m[1 * 3 + 0]) / s;
+                q.z = (m[0 * 3 + 2] + m[2 * 3 + 0]) / s;
+            }
+            else if (m[1 * 3 + 1] > m[2 * 3 + 2])
+            {
+                double s = 2.0 * std::sqrt(1.0 + m[1 * 3 + 1] - m[0 * 3 + 0] - m[2 * 3 + 2]);
+                q.w = (m[0 * 3 + 2] - m[2 * 3 + 0]) / s;
+                q.x = (m[0 * 3 + 1] + m[1 * 3 + 0]) / s;
+                q.y = 0.25 * s;
+                q.z = (m[1 * 3 + 2] + m[2 * 3 + 1]) / s;
+            }
+            else
+            {
+                double s = 2.0 * std::sqrt(1.0 + m[2 * 3 + 2] - m[0 * 3 + 0] - m[1 * 3 + 1]);
+                q.w = (m[1 * 3 + 0] - m[0 * 3 + 1]) / s;
+                q.x = (m[0 * 3 + 2] + m[2 * 3 + 0]) / s;
+                q.y = (m[1 * 3 + 2] + m[2 * 3 + 1]) / s;
+                q.z = 0.25 * s;
+            }
+        }
+        return q;
+    }
+    _R Quaternion::toRotationMat()
+    {
+        _R m;
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
+
+        m[0 * 3 + 0] = ww + xx - yy - zz;
+        m[0 * 3 + 1] = 2 * (x * y - w * z);
+        m[0 * 3 + 2] = 2 * (x * z + w * y);
+
+        m[1 * 3 + 0] = 2 * (x * y + w * z);
+        m[1 * 3 + 1] = ww - xx + yy - zz;
+        m[1 * 3 + 2] = 2 * (y * z - w * x);
+
+        m[2 * 3 + 0] = 2 * (x * z - w * y);
+        m[2 * 3 + 1] = 2 * (y * z + w * x);
+        m[2 * 3 + 2] = ww - xx - yy + zz;
+
+        return m;
+    }
+    void Quaternion::norm()
+    {
+        double norm = std::sqrt(w * w + x * x + y * y + z * z);
+        if (norm == 0)
+            return;
+        w /= norm;
+        x /= norm;
+        y /= norm;
+        z /= norm;
     }
 
 }
