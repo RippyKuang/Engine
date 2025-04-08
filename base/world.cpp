@@ -58,6 +58,9 @@ namespace Engine
         if (info->type == CONTINUOUS)
             return Joint::forward(links, tgt, inc, act_func);
 
+        if (info->type == PRISMATIC)
+            return Joint::forward(links, tgt, inc, act_func);
+
         throw "unknown joint!";
     }
 
@@ -169,7 +172,7 @@ namespace Engine
                 curr_node->append_child_link_id(link_cnt);
                 link2link_id.insert({l, link_cnt});
                 link2parent_joint.insert({l, joint_iter->id});
-                act(link_cnt++, getTransformMat(EYE(3), graph.find(parent_id)->get_origin()));
+                act(link_cnt++, graph.find(parent_id)->get_pose());
             }
             joint_iter++;
         }

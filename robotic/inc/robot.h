@@ -4,7 +4,6 @@
 
 namespace Engine
 {
-    class World;
     class Joint;
     class Joint_node;
 
@@ -24,6 +23,15 @@ namespace Engine
         {
         }
     } INFO;
+
+    typedef struct _PRISMATIC_INFO : INFO
+    {
+        Vector3d axis;
+        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : INFO(pos), axis(_axis)
+        {
+            type = PRISMATIC;
+        }
+    } PRISMATIC_INFO;
 
     typedef struct _CONTINUOUS_INFO : INFO
     {
@@ -52,8 +60,7 @@ namespace Engine
     private:
       
         int parent_link_id;
-        Vector3d origin;
-        _R pose = EYE(3);
+        _T trans;
         INFO *info;
         std::vector<Joint_node *> childs;
         std::vector<int> childs_link_id;
@@ -65,19 +72,21 @@ namespace Engine
             joint_id = -1;
             parent_link_id = -1;
         }
-        Joint_node(int _id, Vector3d _origin, INFO *_info) : joint_id(_id), origin(_origin), info(_info) {}
+        Joint_node(int _id, Vector3d _origin, INFO *_info) : joint_id(_id),info(_info)
+        {
+            trans=getTransformMat(EYE(3),_origin);
+        }
         Joint_node *add_child(const Joint *);
         void append_child_link_id(int);
         void set_parent_link_id(int);
         int get_parent_link_id();
         Joint_node *find(int);
         Joint_node *insert(int, const Joint *);
-        Vector3d get_origin() const;
-        _R get_pose() const;
-        void transform_origin(_R, _R , Vector3d);
+        _T get_pose() const;
+        void transform_origin(_T, _T);
         INFO *get_info() const;
 
-        void act(_R, _R, Vector3d, std::map<int, Link *> &, std::function<void(int, _T)>);
+        void act(_T, _T, std::map<int, Link *> &, std::function<void(int, _T)>);
     };
 
     class Joint
