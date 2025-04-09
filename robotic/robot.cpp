@@ -10,7 +10,7 @@ namespace Engine
 
     Joint_node *Joint_node::add_child(const Joint *jo)
     {
-        Vector3d this_origin = Vector3d{this->trans[3],this->trans[7],this->trans[11]};
+        Vector3d this_origin = Vector3d{this->trans[3], this->trans[7], this->trans[11]};
         Joint_node *j = new Joint_node(jo->id, this_origin + jo->origin, jo->info);
         childs.push_back(j);
         return j;
@@ -91,6 +91,8 @@ namespace Engine
             _T pose = tgt->get_pose();
             tgt->act(rot, pose, links, func);
         }
+        tgt->get_info()->pos = tgt->get_info()->pos + inc;
+        return  tgt->get_info()->pos;
     }
 
 }

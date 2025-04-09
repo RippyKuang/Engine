@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/usr/include/**",
-                "/usr/lib/x86_64-linux-gnu/glib-2.0/**"
+                "/usr/lib/x86_64-linux-gnu/glib-2.0/**",
+                "${workspaceFolder}/middleware/inc"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

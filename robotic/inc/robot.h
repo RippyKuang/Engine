@@ -19,6 +19,7 @@ namespace Engine
     {
         JOINT_TYPE type = FIXED;
         double pos;
+        double speed=0;
         _INFO(double _pos) : pos(_pos)
         {
         }

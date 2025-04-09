@@ -7,15 +7,15 @@ pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 add_subdirectory(visualize)
 add_subdirectory(base)
 add_subdirectory(robotic)
-add_subdirectory(timer)
+add_subdirectory(middleware)
 add_executable(engine main.cpp)
 
-target_link_libraries(engine PUBLIC visual base robot timer)
+target_link_libraries(engine PUBLIC visual base robot middleware)
 target_include_directories(engine PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/visualize/inc"
                           "${PROJECT_SOURCE_DIR}/base/inc"
                           "${PROJECT_SOURCE_DIR}/robotic/inc"
-                          "${PROJECT_SOURCE_DIR}/timer/inc"
+                          "${PROJECT_SOURCE_DIR}/middleware/inc"
                           ${GTK3_INCLUDE_DIRS}
                           )
