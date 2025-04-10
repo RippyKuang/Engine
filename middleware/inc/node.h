@@ -79,8 +79,7 @@ namespace Engine
                    inet_ntop(AF_INET, &serv_addr.sin_addr.s_addr, ip, sizeof(ip)),
                    ntohs(serv_addr.sin_port), lfd);
             listen(lfd, MAX_CONNECTION);
-//00001010111100011111111111111111
-//01111111000000000000000000000001
+
             epfd = epoll_create(1024);
             struct epoll_event ev;
             ev.events = EPOLLIN;
