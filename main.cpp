@@ -16,18 +16,17 @@ int main()
   std::hash<std::string> hasher;
   Publisher<int> a("int");
   int b = 0;
-  Subscription<int> sub_a("int", cb_a);
-  Subscription<int> sub_b("int", cb_b);
+  // Subscription<int> sub_a("int", cb_a);
+  // Subscription<int> sub_b("int", cb_b);
 
-  while (b < 5)
+  while (1)
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     a.publish(b);
+    std::cout << "publish " <<b << std::endl;
     b++;
   }
-  while (1)
-  {
-  }
+
 
   return 0;
 }

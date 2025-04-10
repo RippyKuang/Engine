@@ -65,7 +65,7 @@ namespace Engine
         {
             std::hash<std::string> hasher;
             int port = hasher(topic_name) % 10000 + 10000;
-
+            std::cout << port << std::endl;
             socklen_t serv_len = sizeof(serv_addr);
 
             lfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -74,8 +74,13 @@ namespace Engine
             serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
             serv_addr.sin_port = htons(port);
             bind(lfd, (struct sockaddr *)&serv_addr, serv_len);
+            char ip[64] = {0};
+            printf("> New server [%s:%d] => [%d]\n",
+                   inet_ntop(AF_INET, &serv_addr.sin_addr.s_addr, ip, sizeof(ip)),
+                   ntohs(serv_addr.sin_port), lfd);
             listen(lfd, MAX_CONNECTION);
-
+//00001010111100011111111111111111
+//01111111000000000000000000000001
             epfd = epoll_create(1024);
             struct epoll_event ev;
             ev.events = EPOLLIN;
@@ -150,9 +155,9 @@ namespace Engine
             client_addr.sin_family = AF_INET;
             client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
             client_addr.sin_port = htons(port);
-            
+
             int ret = connect(lfd, (struct sockaddr *)&client_addr, client_len);
-            if(ret==-1)
+            if (ret == -1)
                 perror("connect failed");
             epfd = epoll_create(1024);
             struct epoll_event ev;
