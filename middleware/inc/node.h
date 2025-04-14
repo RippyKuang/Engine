@@ -12,12 +12,14 @@
 #include <iostream>
 #include <functional>
 #include <memory>
+#include <csignal>
 
 #define MAX_SIZE 1024
 #define MAX_CONNECTION 36
 
 namespace Engine
 {
+
     template <typename T>
     class Publisher
     {
@@ -56,6 +58,12 @@ namespace Engine
                                inet_ntop(AF_INET, &client_addr.sin_addr.s_addr, ip, sizeof(ip)),
                                ntohs(client_addr.sin_port), cfd);
                     }
+                    else if (all[i].events & EPOLLHUP)
+                    {
+                        printf("> Client [%d] Disconnected!\n", fd);
+                        epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL);
+                        close(fd);
+                    }
                 }
             }
         }
@@ -73,6 +81,8 @@ namespace Engine
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
             serv_addr.sin_port = htons(port);
+            int opt = 1;
+            setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
             bind(lfd, (struct sockaddr *)&serv_addr, serv_len);
             char ip[64] = {0};
             printf("> New server [%s:%d] => [%d]\n",
@@ -113,7 +123,6 @@ namespace Engine
     private:
         std::string topic;
         struct epoll_event all[MAX_SIZE];
-        struct sockaddr_in client_addr;
 
         int lfd;
         int epfd;
@@ -145,19 +154,31 @@ namespace Engine
         Subscription(std::string topic_name, std::function<void(const std::shared_ptr<T>)> cb) : topic(topic_name), cb(cb)
         {
             std::hash<std::string> hasher;
+
             int port = hasher(topic_name) % 10000 + 10000;
+            while (true)
+            {
+                struct sockaddr_in client_addr;
+                socklen_t client_len = sizeof(client_addr);
 
-            socklen_t client_len = sizeof(client_addr);
+                lfd = socket(AF_INET, SOCK_STREAM, 0);
 
-            lfd = socket(AF_INET, SOCK_STREAM, 0);
-            memset(&client_addr, 0, sizeof(client_addr));
-            client_addr.sin_family = AF_INET;
-            client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-            client_addr.sin_port = htons(port);
+                memset(&client_addr, 0, sizeof(client_addr));
+                client_addr.sin_family = AF_INET;
+                client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+                client_addr.sin_port = htons(port);
 
-            int ret = connect(lfd, (struct sockaddr *)&client_addr, client_len);
-            if (ret == -1)
-                perror("connect failed");
+                int ret = connect(lfd, (struct sockaddr *)&client_addr, client_len);
+
+                if (ret < 0 && errno != EINPROGRESS)
+                {
+                    sleep(1);
+                    std::cout << "Failed to connect,reconnecting" << std::endl;
+                }
+                else
+                    break;
+            }
+
             epfd = epoll_create(1024);
             struct epoll_event ev;
             ev.events = EPOLLIN;

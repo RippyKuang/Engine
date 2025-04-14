@@ -9,8 +9,8 @@ add_subdirectory(base)
 add_subdirectory(robotic)
 add_subdirectory(middleware)
 add_executable(engine main.cpp)
-
 target_link_libraries(engine PUBLIC visual base robot middleware)
+
 target_include_directories(engine PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/visualize/inc"
