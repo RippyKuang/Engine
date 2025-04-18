@@ -13,6 +13,7 @@ namespace Engine
 
     void World::act(int id, _T t, int base)
     {
+        std::lock_guard<std::mutex> lock(m);
         if (id != base)
         {
             pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
@@ -26,6 +27,7 @@ namespace Engine
     }
     void World::act(int id, _R r, int base)
     {
+        std::lock_guard<std::mutex> lock(m);
         auto t = catRow(catCol(r, Vector3d()), catCol(Vector3d().T(), EYE(1)));
         if (id != base)
         {
@@ -40,10 +42,11 @@ namespace Engine
     }
     double World::drive(int id, double inc)
     {
+
         Joint_node *tgt = graph.find(id);
         INFO *info = tgt->get_info();
-        
-        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2,-1);
+
+        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
 
         if (info->type == FIXED)
             throw "Driving a fixed joint!";
@@ -62,6 +65,12 @@ namespace Engine
             return Joint::forward(links, tgt, inc, act_func);
 
         throw "unknown joint!";
+    }
+
+    void World::set_speed(int id, double speed)
+    {
+        int a = timer.add([this, id, speed]
+                          { this->drive(id, speed / 1e2); }, 1 * 1e4);
     }
 
     std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
@@ -102,10 +111,13 @@ namespace Engine
         std::map<int, Link *>::iterator _iter = links.begin();
         std::vector<std::vector<Vector3d>> cubes;
         std::vector<Point2i> projs;
-        while (_iter != links.end())
         {
-            cubes.push_back(to_3d(getCoord(_iter->first, -2)));
-            _iter++;
+            std::lock_guard<std::mutex> lock(m);
+            while (_iter != links.end())
+            {
+                cubes.push_back(to_3d(getCoord(_iter->first, -2)));
+                _iter++;
+            }
         }
         auto iter = cubes.begin();
         while (iter != cubes.end())

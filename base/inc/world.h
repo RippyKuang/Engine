@@ -1,6 +1,7 @@
 #include <camera.h>
 #include <vector>
 #include <robot.h>
+#include <timer.h>
 #include <map>
 #include <unordered_map>
 #include <functional>
@@ -15,8 +16,10 @@ namespace Engine
     {
 
     private:
+        std::mutex m;
         std::map<int, Link *> links;
         std::map<int, _T> pose;
+        Timer timer;
         Joint_node graph;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
