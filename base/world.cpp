@@ -13,7 +13,7 @@ namespace Engine
 
     void World::act(int id, _T t, int base)
     {
-        std::lock_guard<std::mutex> lock(m);
+ 
         if (id != base)
         {
             pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
@@ -24,10 +24,11 @@ namespace Engine
             (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
             pose[id] = pose[base] * t;
         }
+        
     }
     void World::act(int id, _R r, int base)
     {
-        std::lock_guard<std::mutex> lock(m);
+
         auto t = catRow(catCol(r, Vector3d()), catCol(Vector3d().T(), EYE(1)));
         if (id != base)
         {
@@ -39,10 +40,11 @@ namespace Engine
             (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
             pose[id] = pose[base] * t;
         }
+
     }
     double World::drive(int id, double inc)
     {
-
+        std::lock_guard<std::mutex> lock(m);
         Joint_node *tgt = graph.find(id);
         INFO *info = tgt->get_info();
 
@@ -108,17 +110,19 @@ namespace Engine
     }
     std::vector<Point2i> World::project()
     {
+        std::lock_guard<std::mutex> lock(m);
         std::map<int, Link *>::iterator _iter = links.begin();
         std::vector<std::vector<Vector3d>> cubes;
         std::vector<Point2i> projs;
         {
-            std::lock_guard<std::mutex> lock(m);
+            
             while (_iter != links.end())
             {
                 cubes.push_back(to_3d(getCoord(_iter->first, -2)));
                 _iter++;
             }
         }
+        
         auto iter = cubes.begin();
         while (iter != cubes.end())
         {
@@ -139,6 +143,7 @@ namespace Engine
             projs.insert(projs.end(), tprojs.begin(), tprojs.end());
             iter++;
         }
+     
         return projs;
     }
     std::vector<Vector4d> World::getCoord(int id, int base)

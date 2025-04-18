@@ -3,6 +3,7 @@
 #include <iostream>
 #include <functional>
 #include <matrix.h>
+#include <mutex>
 
 namespace Engine
 {
@@ -28,6 +29,7 @@ namespace Engine
         void clear_surface(void);
         void processData(cairo_t *);
         std::vector<Point2i> datas;
+        std::mutex m;
         const int w = 1280;
         const int h = 1024;
         static gboolean draw_cb(GtkWidget *, cairo_t *, gpointer);

@@ -75,6 +75,7 @@
         "__tuple": "cpp",
         "csignal": "cpp",
         "stack": "cpp",
-        "__mutex_base": "cpp"
+        "__mutex_base": "cpp",
+        "__node_handle": "cpp"
     }
 }
