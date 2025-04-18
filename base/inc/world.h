@@ -35,7 +35,7 @@ namespace Engine
         void act(int id, _T t, int base = -1);
         void act(int id, _R t, int base = -1);
         void parse_robot(std::initializer_list<Joint>);
-        double drive(int id, double inc);
+        double drive(int id);
         void set_speed(int id, double speed);
         std::vector<Point2i> project();
     };

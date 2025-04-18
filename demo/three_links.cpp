@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
     World w(camera);
 
     Joint j0(base_link, link0, Vector3d{0, 0, 0.125}, 0, new CONTINUOUS_INFO(AXIS_Z));
-    Joint j1(link0, link1, Vector3d{0, 0, 0.125}, 1, new CONTINUOUS_INFO(AXIS_X));
-    Joint j2(link1, link2, Vector3d{0, -0.2, 0}, 2, new CONTINUOUS_INFO(AXIS_X));
+    Joint j1(link0, link1, Vector3d{0, 0, 0.125}, 1, new REVOLUTE_INFO(AXIS_X,M_PI/2,-M_PI/2));
+    Joint j2(link1, link2, Vector3d{0, -0.2, 0}, 2, new REVOLUTE_INFO(AXIS_X,M_PI/2,-M_PI/2));
 
     w.parse_robot({j0, j1, j2});
 
@@ -38,16 +38,14 @@ int main(int argc, char *argv[])
 
     frame.show();
 
-    frame.updateData(projs);
+    w.set_speed(0, M_PI / 2);
+    w.set_speed(1, M_PI / 8);
+    w.set_speed(2, M_PI / 16);
 
     while (1)
     {
-        usleep(50010);
-        w.drive(0, M_PI / 60);
-        w.drive(1, M_PI / 90);
-        w.drive(2, M_PI / 120);
-        std::vector<Engine::Point2i> projs = w.project();
 
+        std::vector<Engine::Point2i> projs = w.project();
         frame.updateData(projs);
     }
     return 0;

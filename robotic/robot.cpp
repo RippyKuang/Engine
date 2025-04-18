@@ -77,7 +77,7 @@ namespace Engine
 
     double Joint::forward(std::map<int, Link *> &links, Joint_node *tgt, double inc, std::function<void(int, _T)> func)
     {
-        if (tgt->get_info()->type == CONTINUOUS)
+        if (tgt->get_info()->type == CONTINUOUS || tgt->get_info()->type == REVOLUTE)
         {
             CONTINUOUS_INFO *pinfo = static_cast<CONTINUOUS_INFO *>(tgt->get_info());
             _T rot = getTransformMat(AngleAxis(inc, pinfo->axis), Vector3d());

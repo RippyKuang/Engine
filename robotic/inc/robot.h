@@ -19,7 +19,7 @@ namespace Engine
     {
         JOINT_TYPE type = FIXED;
         double pos;
-        double speed=0;
+        double speed = 0;
         _INFO(double _pos) : pos(_pos)
         {
         }
@@ -57,14 +57,17 @@ namespace Engine
 
     class Joint_node
     {
+        friend class Joint;
 
     private:
-      
         int parent_link_id;
         _T trans;
         INFO *info;
         std::vector<Joint_node *> childs;
         std::vector<int> childs_link_id;
+
+    protected:
+        void act(_T, _T, std::map<int, Link *> &, std::function<void(int, _T)>);
 
     public:
         int joint_id;
@@ -73,9 +76,9 @@ namespace Engine
             joint_id = -1;
             parent_link_id = -1;
         }
-        Joint_node(int _id, Vector3d _origin, INFO *_info) : joint_id(_id),info(_info)
+        Joint_node(int _id, Vector3d _origin, INFO *_info) : joint_id(_id), info(_info)
         {
-            trans=getTransformMat(EYE(3),_origin);
+            trans = getTransformMat(EYE(3), _origin);
         }
         Joint_node *add_child(const Joint *);
         void append_child_link_id(int);
@@ -86,8 +89,6 @@ namespace Engine
         _T get_pose() const;
         void transform_origin(_T, _T);
         INFO *get_info() const;
-
-        void act(_T, _T, std::map<int, Link *> &, std::function<void(int, _T)>);
     };
 
     class Joint

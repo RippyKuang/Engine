@@ -13,7 +13,7 @@ namespace Engine
 
     void World::act(int id, _T t, int base)
     {
- 
+
         if (id != base)
         {
             pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
@@ -24,7 +24,6 @@ namespace Engine
             (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
             pose[id] = pose[base] * t;
         }
-        
     }
     void World::act(int id, _R r, int base)
     {
@@ -40,13 +39,13 @@ namespace Engine
             (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
             pose[id] = pose[base] * t;
         }
-
     }
-    double World::drive(int id, double inc)
+    double World::drive(int id)
     {
         std::lock_guard<std::mutex> lock(m);
         Joint_node *tgt = graph.find(id);
         INFO *info = tgt->get_info();
+        double inc = info->speed * 1e-3;
 
         std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
 
@@ -71,8 +70,10 @@ namespace Engine
 
     void World::set_speed(int id, double speed)
     {
-        int a = timer.add([this, id, speed]
-                          { this->drive(id, speed / 1e2); }, 1 * 1e4);
+        std::lock_guard<std::mutex> lock(m);
+        Joint_node *tgt = graph.find(id);
+        INFO *info = tgt->get_info();
+        info->speed = speed;
     }
 
     std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
@@ -115,14 +116,14 @@ namespace Engine
         std::vector<std::vector<Vector3d>> cubes;
         std::vector<Point2i> projs;
         {
-            
+
             while (_iter != links.end())
             {
                 cubes.push_back(to_3d(getCoord(_iter->first, -2)));
                 _iter++;
             }
         }
-        
+
         auto iter = cubes.begin();
         while (iter != cubes.end())
         {
@@ -143,7 +144,7 @@ namespace Engine
             projs.insert(projs.end(), tprojs.begin(), tprojs.end());
             iter++;
         }
-     
+
         return projs;
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
@@ -164,6 +165,7 @@ namespace Engine
         std::unordered_map<Cube *, int> link2link_id;
 
         auto joint_iter = jo.begin();
+
         curr_node->set_parent_link_id(link_cnt);
         emplace(*joint_iter->parent_link, link_cnt);
         link2link_id.insert({joint_iter->parent_link, link_cnt++});
@@ -193,5 +195,8 @@ namespace Engine
             }
             joint_iter++;
         }
+        for (auto j = jo.begin(); j != jo.end(); j++)
+            timer.add([this, j]
+                      { this->drive(j->id); }, 1 * 1e3);
     }
 }
