@@ -1,5 +1,7 @@
+#pragma once
 #include <items.h>
 #include <functional>
+#include <twist.h>
 #include <map>
 
 namespace Engine
@@ -18,28 +20,41 @@ namespace Engine
     typedef struct _INFO
     {
         JOINT_TYPE type = FIXED;
-        double pos;
         double speed = 0;
-        _INFO(double _pos) : pos(_pos)
+        double pos = 0;
+        Twist get_twist()
         {
+            return Twist();
         }
     } INFO;
-
+    typedef INFO FIXED_INFO;
     typedef struct _PRISMATIC_INFO : INFO
     {
         Vector3d axis;
-        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : INFO(pos), axis(_axis)
+        double pos;
+        double speed = 0;
+        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : pos(pos), axis(_axis)
         {
             type = PRISMATIC;
+        }
+        Twist get_twist()
+        {
+            return Twist(Vector3d(), axis * speed);
         }
     } PRISMATIC_INFO;
 
     typedef struct _CONTINUOUS_INFO : INFO
     {
         Vector3d axis;
-        _CONTINUOUS_INFO(Vector3d _axis, double pos = 0) : INFO(pos), axis(_axis)
+        double pos;
+        double speed = 0;
+        _CONTINUOUS_INFO(Vector3d _axis, double pos = 0) : pos(pos), axis(_axis)
         {
             type = CONTINUOUS;
+        }
+        Twist get_twist()
+        {
+            return Twist(axis * speed, Vector3d());
         }
     } CONTINUOUS_INFO;
 
@@ -65,6 +80,7 @@ namespace Engine
         INFO *info;
         std::vector<Joint_node *> childs;
         std::vector<int> childs_link_id;
+        void transform_origin(_T, _T);
 
     protected:
         void act(_T, _T, std::map<int, Link *> &, std::function<void(int, _T)>);
@@ -87,8 +103,18 @@ namespace Engine
         Joint_node *find(int);
         Joint_node *insert(int, const Joint *);
         _T get_pose() const;
-        void transform_origin(_T, _T);
+        Twist get_twist() const;
         INFO *get_info() const;
+
+        void Jacobian(std::vector<Matrix<double, 6, 1>> &v)
+        {
+            if (this->parent_link_id != -1)
+                v.push_back(this->get_twist());
+            if (this->childs.size() == 0)
+                return;
+            else
+                this->childs[0]->Jacobian(v);
+        }
     };
 
     class Joint

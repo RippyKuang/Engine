@@ -31,8 +31,9 @@ int main(int argc, char *argv[])
     Joint j0(base_link, link0, Vector3d{0, 0, 0.125}, 0, new CONTINUOUS_INFO(AXIS_Z));
     Joint j1(link0, link1, Vector3d{0, 0, 0.125}, 1, new REVOLUTE_INFO(AXIS_X,M_PI/2,-M_PI/2));
     Joint j2(link1, link2, Vector3d{0, -0.2, 0}, 2, new REVOLUTE_INFO(AXIS_X,M_PI/2,-M_PI/2));
+    Joint j3(link2, Vector3d{0, -0.2, 0}, 3, new FIXED_INFO());
 
-    w.parse_robot({j0, j1, j2});
+    w.parse_robot({j0, j1, j2, j3});
 
     std::vector<Engine::Point2i> projs = w.project();
 

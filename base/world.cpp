@@ -45,7 +45,36 @@ namespace Engine
         std::lock_guard<std::mutex> lock(m);
         Joint_node *tgt = graph.find(id);
         INFO *info = tgt->get_info();
+        if (info->speed==0)
+            return 0;
         double inc = info->speed * 1e-3;
+
+        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
+
+        if (info->type == FIXED)
+            throw "Driving a fixed joint!";
+        if (info->type == REVOLUTE)
+        {
+            REVOLUTE_INFO *pinfo = static_cast<REVOLUTE_INFO *>(info);
+            if ((pinfo->pos + inc >= pinfo->min_rad) && (pinfo->pos + inc <= pinfo->max_rad))
+                return Joint::forward(links, tgt, inc, act_func);
+            else
+                return _FALSE;
+        }
+        if (info->type == CONTINUOUS)
+            return Joint::forward(links, tgt, inc, act_func);
+
+        if (info->type == PRISMATIC)
+            return Joint::forward(links, tgt, inc, act_func);
+
+        throw "unknown joint!";
+    }
+
+    double World::drive(int id,double inc)
+    {
+        std::lock_guard<std::mutex> lock(m);
+        Joint_node *tgt = graph.find(id);
+        INFO *info = tgt->get_info();
 
         std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
 
@@ -115,14 +144,14 @@ namespace Engine
         std::map<int, Link *>::iterator _iter = links.begin();
         std::vector<std::vector<Vector3d>> cubes;
         std::vector<Point2i> projs;
-        {
+        
 
-            while (_iter != links.end())
-            {
-                cubes.push_back(to_3d(getCoord(_iter->first, -2)));
-                _iter++;
-            }
+        while (_iter != links.end())
+        {
+            cubes.push_back(to_3d(getCoord(_iter->first, -2)));
+             _iter++;
         }
+        
 
         auto iter = cubes.begin();
         while (iter != cubes.end())
@@ -158,6 +187,7 @@ namespace Engine
     {
 
         const Joint *base_joint = jo.begin();
+        num_joints = jo.size();
         int link_cnt = 0;
 
         Joint_node *curr_node = graph.add_child(base_joint);
@@ -196,7 +226,14 @@ namespace Engine
             joint_iter++;
         }
         for (auto j = jo.begin(); j != jo.end(); j++)
-            timer.add([this, j]
-                      { this->drive(j->id); }, 1 * 1e3);
+        {
+            if (j->info->type == FIXED)
+                continue;
+            std::function<double()> func = std::bind((double (World::*)(int))&World::drive, this,j->id);
+            timer.add(func, 1 * 1e3);
+        }
     }
+
+
+
 }

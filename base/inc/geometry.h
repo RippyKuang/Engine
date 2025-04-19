@@ -1,4 +1,3 @@
-#pragma once
 #include <matrix.h>
 #include <math.h>
 #include <marcos.h>

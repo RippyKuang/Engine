@@ -50,10 +50,17 @@ namespace Engine
     {
         return this->trans;
     }
+
+    Twist Joint_node::get_twist() const
+    {
+        return adjoint(this->trans)*(this->info->get_twist());
+    }
+
     INFO *Joint_node::get_info() const
     {
         return this->info;
     }
+
     void Joint_node::transform_origin(_T t, _T base)
     {
         this->trans = base * t * inv(base) * this->trans;

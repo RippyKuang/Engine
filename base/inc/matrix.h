@@ -28,9 +28,10 @@ namespace Engine
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = val;
         }
-        
-        Matrix(const Matrix<_Scalar,_Rows,_Cols> &m)
+
+        Matrix(const Matrix<_Scalar, _Rows, _Cols> &m)
         {
+
             data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = m[i];
@@ -38,6 +39,8 @@ namespace Engine
         template <typename _mScalar, int _mRow, int _mCol>
         Matrix(const Matrix<_mScalar, _mRow, _mCol> &m, _Scalar val = 0)
         {
+            if (_mRow * _mCol == 0)
+                return;
             data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             if (_Rows * _Cols >= _mCol * _mRow)
             {
@@ -77,7 +80,7 @@ namespace Engine
 
             return m;
         }
-     
+
         Matrix operator+(const Matrix &b)
         {
             Matrix<_Scalar, _Rows, _Cols> m;
@@ -85,7 +88,7 @@ namespace Engine
                 m[x] = this->data[x] + b[x];
             return m;
         }
-        
+
         Matrix operator-(const Matrix &b)
         {
             Matrix<_Scalar, _Rows, _Cols> m;
