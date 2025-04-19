@@ -53,6 +53,7 @@ namespace Engine
 
     Twist Joint_node::get_twist() const
     {
+        
         return adjoint(this->trans)*(this->info->get_twist());
     }
 

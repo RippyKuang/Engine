@@ -22,7 +22,10 @@ namespace Engine
         JOINT_TYPE type = FIXED;
         double speed = 0;
         double pos = 0;
-        Twist get_twist()
+        _INFO(double p = 0) : pos(p)
+        {
+        }
+        virtual Twist get_twist()
         {
             return Twist();
         }
@@ -31,13 +34,12 @@ namespace Engine
     typedef struct _PRISMATIC_INFO : INFO
     {
         Vector3d axis;
-        double pos;
-        double speed = 0;
-        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : pos(pos), axis(_axis)
+
+        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : INFO(pos), axis(_axis)
         {
             type = PRISMATIC;
         }
-        Twist get_twist()
+        Twist get_twist() override
         {
             return Twist(Vector3d(), axis * speed);
         }
@@ -46,14 +48,14 @@ namespace Engine
     typedef struct _CONTINUOUS_INFO : INFO
     {
         Vector3d axis;
-        double pos;
-        double speed = 0;
-        _CONTINUOUS_INFO(Vector3d _axis, double pos = 0) : pos(pos), axis(_axis)
+
+        _CONTINUOUS_INFO(Vector3d _axis, double pos = 0) : INFO(pos), axis(_axis)
         {
             type = CONTINUOUS;
         }
-        Twist get_twist()
+        virtual Twist get_twist() override
         {
+            std::cout << axis << " " << speed << std::endl;
             return Twist(axis * speed, Vector3d());
         }
     } CONTINUOUS_INFO;
@@ -109,7 +111,10 @@ namespace Engine
         void Jacobian(std::vector<Matrix<double, 6, 1>> &v)
         {
             if (this->parent_link_id != -1)
+            {
                 v.push_back(this->get_twist());
+            }
+
             if (this->childs.size() == 0)
                 return;
             else

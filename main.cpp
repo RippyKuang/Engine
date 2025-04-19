@@ -44,10 +44,12 @@ int main(int argc, char *argv[])
     w.set_speed(1, M_PI / 4);
     w.set_speed(2, M_PI / 8);
 
-    std::cout << w.Jacobian<4>() << std::endl;
+  
     while (1)
     {
         usleep(10 * 1e3);
+   
+        std::cout<<w.Jacobian<4>()<<std::endl;
         std::vector<Engine::Point2i> projs = w.project();
         frame.updateData(projs);
     }

@@ -17,7 +17,7 @@ namespace Engine
 
     private:
         std::mutex m;
-     
+
         std::map<int, _T> pose;
         int num_joints;
         Timer timer;
@@ -38,21 +38,50 @@ namespace Engine
         void act(int id, _R t, int base = -1);
         void parse_robot(std::initializer_list<Joint>);
         double drive(int id);
-        double drive(int id,double inc);
+        double drive(int id, double inc);
         void set_speed(int id, double speed);
         std::vector<Point2i> project();
 
-        template <int num>
-        Matrix<double, 6, num> Jacobian()
+        // template <int num>
+        // Matrix<double, 6, num> Jacobian()
+        // {
+        //     std::lock_guard<std::mutex> lock(m);
+        //     std::vector<Matrix<double, 6, 1>> v;
+        //     Matrix<double, 6, 0> jac;
+        //     this->graph.Jacobian(v);
+        //     assert(num == v.size());
+        //     for (int i = 0; i < v.size(); i++)
+        //     Matrix<double, 6, i+1> jac = catCol(jac, v[i]);
+        //     return jac;
+        // }
+
+        template <int Index, int Num>
+        Matrix<double, 6, Index + 1> BuildJacobian(const std::vector<Matrix<double, 6, 1>> &v)
+        {
+            if constexpr (Index == 0)
+            {
+                return Matrix<double, 6, 1>(v[0]);
+            }
+            else
+            {
+                auto left = BuildJacobian<Index - 1, Num>(v);
+                return catCol(left, v[Index]);
+            }
+        }
+
+        // Jacobian wrapper 函数
+        template <int Num>
+        Matrix<double, 6, Num> Jacobian()
         {
             std::lock_guard<std::mutex> lock(m);
             std::vector<Matrix<double, 6, 1>> v;
-            Matrix<double, 6, 0> jac;
             this->graph.Jacobian(v);
-            assert(num == v.size());
-            for (int i = 0; i < v.size(); i++)
-                jac = catCol(jac, v[i]);
-            return jac;
+            assert(v.size() == Num);
+            // for (auto i : v)
+            // {
+            //     std::cout<<i<<std::endl;
+            // }
+            return BuildJacobian<Num - 1, Num>(v);
         }
     };
 
