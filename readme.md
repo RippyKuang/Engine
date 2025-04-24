@@ -4,6 +4,7 @@ A light-weighted Robot Simulator based on C++&GTK
 - [x] Start from scratch
 - [x] With ros-like IPC method
 - [x] Represent robots by URDF syntax 
+- [x] Trajectory Generation 
 - [ ] Interactive robot control
 - [x] Forward Kinematics
 - [ ] Inverse Kinematics
