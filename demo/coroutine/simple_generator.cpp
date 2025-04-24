@@ -1,13 +1,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <trajectory.h>
-#include <timer.h>
-#include <future>
-#include <chrono>
-#include <thread>
-#include <functional>
-#include <type_traits>
-template <typename T>
+
+template<typename T>
 struct Generator
 {
     class ExhaustedException : std::exception
@@ -18,10 +13,7 @@ struct Generator
         T value;
         bool is_ready = false;
 
-        std::suspend_always initial_suspend()
-        {
-            return {};
-        };
+        std::suspend_never initial_suspend() { return {}; };
 
         std::suspend_always final_suspend() noexcept { return {}; }
 
@@ -69,37 +61,27 @@ struct Generator
             throw ExhaustedException();
         }
     }
-
     ~Generator()
     {
         handle.destroy();
     }
 };
 
-template<typename F>
-Generator<std::invoke_result_t<F, Engine::duration >> time_sequence(F f)
-{   
-  //  co_await std::suspend_always{};
-    auto start_time = Engine::clock::now();
+Generator<int> sequence()
+{
+    int i = 0;
     while (true)
     {
-        co_yield f(Engine::clock::now()-start_time);
+        co_yield  i++;
     }
-}
-
-double time_function(Engine::duration t)
-{
-    return t.count();
 }
 
 int main(int argc, char *argv[])
 {
-    auto gen = time_sequence(time_function);
+    auto gen = sequence();
     for (int i = 0; i < 5; ++i)
     {
-        auto x = gen.next();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        std::cout << x << std::endl;
+        std::cout << gen.next() << std::endl;
     }
     return 0;
 }

@@ -16,7 +16,7 @@ namespace Engine
     using handler_t = std::function<void()>;
     using clock = std::chrono::steady_clock;
     using timestamp = std::chrono::time_point<clock>;
-    using duration = std::chrono::microseconds;
+    using duration = std::chrono::nanoseconds;
 
     struct Event
     {

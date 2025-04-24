@@ -1,4 +1,5 @@
 {
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "files.associations": {
         "\".cu\"": "\".cpp\"",
         "iostream": "cpp",
@@ -76,6 +77,14 @@
         "csignal": "cpp",
         "stack": "cpp",
         "__mutex_base": "cpp",
-        "__node_handle": "cpp"
+        "__node_handle": "cpp",
+        "coroutine": "cpp",
+        "future": "cpp",
+        "timer": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "executor": "cpp",
+        "io_context": "cpp",
+        "netfwd": "cpp"
     }
 }
