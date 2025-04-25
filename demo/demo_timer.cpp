@@ -27,8 +27,8 @@ void bar()
 int main(int argc, char *argv[])
 {
     Timer timer;
-    int a = timer.add(foo, 100 * 1e3);
-    int b = timer.add(bar, 50 * 1e3);
+    int a = timer.add(foo, 100 _ms);
+    int b = timer.add(bar, 50 _ms);
     sleep(10);
     timer.remove(b);
     while (1)

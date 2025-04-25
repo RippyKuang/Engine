@@ -13,6 +13,9 @@
 
 namespace Engine
 {
+    #define _s * 1e9
+    #define _ms * 1e6
+    #define _us * 1e3
     using handler_t = std::function<void()>;
     using clock = std::chrono::steady_clock;
     using timestamp = std::chrono::time_point<clock>;

@@ -42,18 +42,6 @@ namespace Engine
         void set_speed(int id, double speed);
         std::vector<Point2i> project();
 
-        // template <int num>
-        // Matrix<double, 6, num> Jacobian()
-        // {
-        //     std::lock_guard<std::mutex> lock(m);
-        //     std::vector<Matrix<double, 6, 1>> v;
-        //     Matrix<double, 6, 0> jac;
-        //     this->graph.Jacobian(v);
-        //     assert(num == v.size());
-        //     for (int i = 0; i < v.size(); i++)
-        //     Matrix<double, 6, i+1> jac = catCol(jac, v[i]);
-        //     return jac;
-        // }
 
         template <int Index, int Num>
         Matrix<double, 6, Index + 1> BuildJacobian(const std::vector<Matrix<double, 6, 1>> &v)
@@ -69,7 +57,6 @@ namespace Engine
             }
         }
 
-        // Jacobian wrapper 函数
         template <int Num>
         Matrix<double, 6, Num> Jacobian()
         {
@@ -77,10 +64,7 @@ namespace Engine
             std::vector<Matrix<double, 6, 1>> v;
             this->graph.Jacobian(v);
             assert(v.size() == Num);
-            // for (auto i : v)
-            // {
-            //     std::cout<<i<<std::endl;
-            // }
+
             return BuildJacobian<Num - 1, Num>(v);
         }
     };

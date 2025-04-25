@@ -47,7 +47,7 @@ namespace Engine
         INFO *info = tgt->get_info();
         if (info->speed==0)
             return 0;
-        double inc = info->speed * 1e-3;
+        double inc = info->speed /(1 _ms);
 
         std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
 
@@ -230,7 +230,7 @@ namespace Engine
             if (j->info->type == FIXED)
                 continue;
             std::function<double()> func = std::bind((double (World::*)(int))&World::drive, this,j->id);
-            timer.add(func, 1 * 1e3);
+            timer.add(func, 1 _ms);
         }
     }
 
