@@ -102,16 +102,17 @@ template <typename F>
 Generator<std::invoke_result_t<F, duration>> sequence(F f)
 {
 
-    auto start_time = clock::now();
+    timestamp start_time = clock::now();
     while (true)
     {
         auto elapsed = clock::now() - start_time;
+        std::cout<<elapsed.count()<<std::endl;
         if (f.if_overtime(elapsed))
         {
             co_yield f.end;
             break;
         }
-        co_yield f(elapsed);
+        co_yield std::invoke(f,elapsed);
     }
 }
 
@@ -125,7 +126,7 @@ int main(int argc, char *argv[])
     Matrix<double, 1, 5> a{0, 0, 0, 0, 0};
     Matrix<double, 1, 5> b{5, 5, 5, 5, 5};
 
-    auto gen = sequence(LinearGen(a, b, 5 _s));
+    auto gen = sequence(LinearGen(a, b, 5 _ms));
     while (true)
     {
         auto x = gen.next();
