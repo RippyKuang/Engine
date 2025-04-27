@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_map>
 #include <functional>
+#include <type_traits>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -24,7 +25,7 @@ namespace Engine
         Joint_node graph;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
-        std::vector<Vector3d> discrete(std::vector<Vector3d> &, std::vector<Point2i> &, std::vector<bool> &);
+        void discrete(std::vector<Vector3d> &,std::vector<Vector3d>&, std::vector<Point2i> &, std::vector<bool> &);
 
     public:
         std::map<int, Link *> links;
@@ -40,22 +41,31 @@ namespace Engine
         double drive(int id);
         double drive(int id, double inc);
         void set_speed(int id, double speed);
-        std::vector<Point2i> project();
+        void set_acc(int id, double acc);
+        void project(std::vector<Point2i>&);
 
+        template <int Index, int Num, typename Enable = void>
+        struct BuildJacobian;
 
         template <int Index, int Num>
-        Matrix<double, 6, Index + 1> BuildJacobian(const std::vector<Matrix<double, 6, 1>> &v)
+        struct BuildJacobian<Index, Num, typename std::enable_if<Index != 0, void>::type>
         {
-            if constexpr (Index == 0)
+            Matrix<double, 6, Index + 1> operator()(std::vector<Matrix<double, 6, 1>>& v)
             {
-                return Matrix<double, 6, 1>(v[0]);
+                auto j = BuildJacobian<Index - 1, Num>()(v);
+                return catCol(j, v[Index]);
             }
-            else
+        };
+
+        template <int Index, int Num>
+        struct BuildJacobian<Index, Num, typename std::enable_if<Index == 0, void>::type>
+        {
+
+            auto operator()(std::vector<Matrix<double, 6, 1>>& v)->decltype(v[0])
             {
-                auto left = BuildJacobian<Index - 1, Num>(v);
-                return catCol(left, v[Index]);
+                return v[0];
             }
-        }
+        };
 
         template <int Num>
         Matrix<double, 6, Num> Jacobian()
@@ -65,7 +75,7 @@ namespace Engine
             this->graph.Jacobian(v);
             assert(v.size() == Num);
 
-            return BuildJacobian<Num - 1, Num>(v);
+            return BuildJacobian<Num - 1, Num>()(v);
         }
     };
 

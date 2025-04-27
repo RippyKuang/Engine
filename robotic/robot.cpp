@@ -53,8 +53,8 @@ namespace Engine
 
     Twist Joint_node::get_twist() const
     {
-        
-        return adjoint(this->trans)*(this->info->get_twist());
+
+        return adjoint(this->trans) * (this->info->get_twist());
     }
 
     INFO *Joint_node::get_info() const
@@ -62,11 +62,11 @@ namespace Engine
         return this->info;
     }
 
-    void Joint_node::transform_origin(_T t, _T base)
+    void Joint_node::transform_origin(_T &t, _T &base)
     {
         this->trans = base * t * inv(base) * this->trans;
     }
-    void Joint_node::act(_T t, _T base, std::map<int, Link *> &links, std::function<void(int, _T)> func)
+    void Joint_node::act(_T &t, _T &base, std::map<int, Link *> &links, std::function<void(int, _T)> func)
     {
 
         for (auto child_id : childs_link_id)
@@ -100,7 +100,7 @@ namespace Engine
             tgt->act(rot, pose, links, func);
         }
         tgt->get_info()->pos = tgt->get_info()->pos + inc;
-        return  tgt->get_info()->pos;
+        return tgt->get_info()->pos;
     }
 
 }

@@ -22,6 +22,7 @@ namespace Engine
         JOINT_TYPE type = FIXED;
         double speed = 0;
         double pos = 0;
+        double acc = 0;
         _INFO(double p = 0) : pos(p)
         {
         }
@@ -55,7 +56,6 @@ namespace Engine
         }
         virtual Twist get_twist() override
         {
-            std::cout << axis << " " << speed << std::endl;
             return Twist(axis * speed, Vector3d());
         }
     } CONTINUOUS_INFO;
@@ -82,10 +82,10 @@ namespace Engine
         INFO *info;
         std::vector<Joint_node *> childs;
         std::vector<int> childs_link_id;
-        void transform_origin(_T, _T);
+        void transform_origin(_T &, _T &);
 
     protected:
-        void act(_T, _T, std::map<int, Link *> &, std::function<void(int, _T)>);
+        void act(_T &, _T &, std::map<int, Link *> &, std::function<void(int, _T)>);
 
     public:
         int joint_id;

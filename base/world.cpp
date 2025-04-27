@@ -45,9 +45,10 @@ namespace Engine
         std::lock_guard<std::mutex> lock(m);
         Joint_node *tgt = graph.find(id);
         INFO *info = tgt->get_info();
-        if (info->speed==0)
+        if (info->speed == 0 && info->acc == 0)
             return 0;
-        double inc = info->speed /(1 _ms);
+        info->speed += info->acc * 1e-3;
+        double inc = info->speed * 1e-3;
 
         std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
 
@@ -70,7 +71,7 @@ namespace Engine
         throw "unknown joint!";
     }
 
-    double World::drive(int id,double inc)
+    double World::drive(int id, double inc)
     {
         std::lock_guard<std::mutex> lock(m);
         Joint_node *tgt = graph.find(id);
@@ -105,7 +106,15 @@ namespace Engine
         info->speed = speed;
     }
 
-    std::vector<Vector3d> World::discrete(std::vector<Vector3d> &pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
+    void World::set_acc(int id, double acc)
+    {
+        std::lock_guard<std::mutex> lock(m);
+        Joint_node *tgt = graph.find(id);
+        INFO *info = tgt->get_info();
+        info->acc = acc;
+    }
+
+    void World::discrete(std::vector<Vector3d> &pw, std::vector<Vector3d> &discreted_pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
     {
 
 #define DISCRETE_LINE(a, b)                                                                                                      \
@@ -126,8 +135,6 @@ namespace Engine
         DISCRETE_LINE(a, d);      \
     } while (0)
 
-        std::vector<Vector3d> discreted_pw;
-
         PART_DISCRETE(0, 1, 2, 4);
         PART_DISCRETE(6, 7, 2, 4);
         PART_DISCRETE(5, 4, 1, 7);
@@ -135,23 +142,21 @@ namespace Engine
 
 #undef DISCRETE_LINE
 #undef PART_DISCRETE
-
-        return discreted_pw;
     }
-    std::vector<Point2i> World::project()
+    void World::project(std::vector<Point2i> &projs)
     {
-        std::lock_guard<std::mutex> lock(m);
-        std::map<int, Link *>::iterator _iter = links.begin();
         std::vector<std::vector<Vector3d>> cubes;
-        std::vector<Point2i> projs;
-        
 
-        while (_iter != links.end())
         {
-            cubes.push_back(to_3d(getCoord(_iter->first, -2)));
-             _iter++;
+            std::lock_guard<std::mutex> lock(m);
+            std::map<int, Link *>::iterator _iter = links.begin();
+
+            while (_iter != links.end())
+            {
+                cubes.push_back(to_3d(getCoord(_iter->first, -2)));
+                _iter++;
+            }
         }
-        
 
         auto iter = cubes.begin();
         while (iter != cubes.end())
@@ -159,8 +164,10 @@ namespace Engine
             std::vector<Vector3d> cube_in_camera = *iter;
             std::vector<bool> visible(cube_in_camera.size(), true);
             remove_self_hidden(cube_in_camera, visible);
-            std::vector<Point2i> pseudo_tprojs = cam.project(cube_in_camera, visible, true);
-            std::vector<Vector3d> discreted_pw = discrete(cube_in_camera, pseudo_tprojs, visible);
+            std::vector<Point2i> pseudo_tprojs;
+            cam.project(cube_in_camera, pseudo_tprojs, visible, true);
+            std::vector<Vector3d> discreted_pw;
+            discrete(cube_in_camera, discreted_pw, pseudo_tprojs, visible);
             auto temp_iter = cubes.begin();
             visible.assign(discreted_pw.size(), true);
             while (temp_iter != cubes.end())
@@ -169,12 +176,11 @@ namespace Engine
                     remove_inter_hidden(discreted_pw, *temp_iter, visible);
                 temp_iter++;
             }
-            std::vector<Point2i> tprojs = cam.project(discreted_pw, visible);
+            std::vector<Point2i> tprojs;
+            cam.project(discreted_pw, tprojs, visible);
             projs.insert(projs.end(), tprojs.begin(), tprojs.end());
             iter++;
         }
-
-        return projs;
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {
@@ -229,11 +235,9 @@ namespace Engine
         {
             if (j->info->type == FIXED)
                 continue;
-            std::function<double()> func = std::bind((double (World::*)(int))&World::drive, this,j->id);
+            std::function<double()> func = std::bind((double (World::*)(int))&World::drive, this, j->id);
             timer.add(func, 1 _ms);
         }
     }
-
-
 
 }

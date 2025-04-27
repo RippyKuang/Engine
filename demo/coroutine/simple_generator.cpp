@@ -82,8 +82,8 @@ struct LinearGen
     class OverTimeException : std::exception
     {
     };
-    Matrix<double, 1, _N> start;
-    Matrix<double, 1, _N> end;
+    Matrix<double, 1, _N> start, end;
+
     duration dur;
     LinearGen(Matrix<double, 1, _N> s, Matrix<double, 1, _N> e,const size_t dur) : start(s), end(e), dur(dur) {}
     Matrix<double, 1, _N> operator()(duration elapsed)
@@ -95,22 +95,24 @@ struct LinearGen
     {
         return elapsed > dur;
     }
+
 };
 
 template <typename F>
 Generator<std::invoke_result_t<F, duration>> sequence(F f)
 {
 
-    auto start_time = clock::now();
+    timestamp start_time = clock::now();
     while (true)
     {
         auto elapsed = clock::now() - start_time;
+        std::cout<<elapsed.count()<<std::endl;
         if (f.if_overtime(elapsed))
         {
             co_yield f.end;
             break;
         }
-        co_yield f(elapsed);
+        co_yield std::invoke(f,elapsed);
     }
 }
 
@@ -124,7 +126,7 @@ int main(int argc, char *argv[])
     Matrix<double, 1, 5> a{0, 0, 0, 0, 0};
     Matrix<double, 1, 5> b{5, 5, 5, 5, 5};
 
-    auto gen = sequence(LinearGen(a, b, 5 _s));
+    auto gen = sequence(LinearGen(a, b, 5 _ms));
     while (true)
     {
         auto x = gen.next();
