@@ -73,7 +73,6 @@ namespace Engine
             std::lock_guard<std::mutex> lock(m);
             std::vector<Matrix<double, 6, 1>> v;
             this->graph.Jacobian(v);
-            assert(v.size() == Num);
 
             return BuildJacobian<Num - 1, Num>()(v);
         }

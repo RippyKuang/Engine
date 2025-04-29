@@ -13,6 +13,8 @@ namespace Engine
 
     protected:
         _T init_pose;
+        double mass;
+        Vector3d center;
         void transform(_T);
         std::vector<Vector4d> corners;
 
@@ -41,6 +43,6 @@ namespace Engine
         {
             assert(_corners.size() == 8);
         }
-        Cube(Vector3d box, Vector3d rpy = Vector3d{0, 0, 0}, Vector3d xyz = Vector3d{0, 0, 0});
+        Cube(Vector3d box, Vector3d rpy = Vector3d{0, 0, 0}, Vector3d xyz = Vector3d{0, 0, 0}, double mass = 1);
     };
 }

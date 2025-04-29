@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
     Joint j3(link2, link3, Vector3d{0, 0, -0.075}, 3, new PRISMATIC_INFO(AXIS_Z));
 
     w.parse_robot({j0, j1, j2, j3});
-
-    std::vector<Engine::Point2i> projs = w.project();
+    std::vector<Engine::Point2i> projs;
+    w.project(projs);
 
     frame.show();
 
@@ -45,7 +45,8 @@ int main(int argc, char *argv[])
         usleep(10 * 1e3);
    
         std::cout<<w.Jacobian<4>()<<std::endl;
-        std::vector<Engine::Point2i> projs = w.project();
+        std::vector<Engine::Point2i> projs ;
+        w.project(projs);
         frame.updateData(projs);
     }
     return 0;

@@ -6,6 +6,7 @@ namespace Engine
     {
         for (auto it = this->corners.begin(); it != this->corners.end(); it++)
             *it = t * (*it);
+        this->center = t * this->center;
     }
 
     Link::Link(std::vector<Vector3d> _corners)
@@ -14,11 +15,13 @@ namespace Engine
             this->corners.push_back(Vector4d(corner, 1));
     }
 
-    Cube::Cube(Vector3d box, Vector3d rpy, Vector3d xyz)
+    Cube::Cube(Vector3d box, Vector3d rpy, Vector3d xyz, double mass)
     {
         double x = box[0];
         double y = box[1];
         double z = box[2];
+        this->mass = mass;
+        this->center = xyz;
         corners.push_back(Vector4d{+x / 2, -y / 2, +z / 2, 1});
         corners.push_back(Vector4d{+x / 2, -y / 2, -z / 2, 1});
         corners.push_back(Vector4d{+x / 2, +y / 2, +z / 2, 1});

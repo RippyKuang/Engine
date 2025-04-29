@@ -48,7 +48,7 @@ namespace Engine
         if (info->speed == 0 && info->acc == 0)
             return 0;
         info->speed += info->acc * 1e-3;
-        double inc = info->speed * 1e-3;
+        double inc = info->speed * 1e-3 ;
 
         std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
 
