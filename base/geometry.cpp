@@ -24,7 +24,19 @@ namespace Engine
                   s2, -s1 * c2, c1 * c2};
     }
 
-    _T inv(_T t)
+    _T inv(_T&& t)
+    {
+        _R r;
+        Vector3d vec;
+        for (int x = 0; x < 3; x++)
+            for (int y = 0; y < 3; y++)
+                r[x * 3 + y] = t[x * 4 + y];
+        for (int x = 0; x < 3; x++)
+            vec[x] = t[x * 4 + 3];
+        return getTransformMat(r.T(), r.T() * vec * (-1));
+    }
+
+    _T inv(_T& t)
     {
         _R r;
         Vector3d vec;
@@ -143,7 +155,7 @@ namespace Engine
         }
     }
 
-    void getRT(_T t, _R &r, Vector3d &tvec)
+    void getRT(_T& t, _R &r, Vector3d &tvec)
     {
         for (int x = 0; x < 3; x++)
             for (int y = 0; y < 3; y++)

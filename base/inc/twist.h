@@ -36,7 +36,8 @@ namespace Engine
         }
     };
     
-    inline Twist bracket(Twist v1, Twist v2)
+    template<typename T1,typename T2>
+    inline Twist bracket(T1&& v1, T2&& v2)
     {
         Vector3d v1_w{v1[0], v1[1], v1[2]};
         Vector3d v1_v{v1[3], v1[4], v1[5]};

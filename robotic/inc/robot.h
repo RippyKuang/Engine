@@ -94,11 +94,11 @@ namespace Engine
         INFO *info;
         std::vector<Joint_node *> childs;
         std::vector<int> childs_link_id;
-        void transform_origin(_T,_T);
-        void _impl_ID(std::vector<Twist> &v, std::vector<Twist> &dv, _T &base, Twist last_t, Twist last_dt);
+        void transform_origin(_T&,_T&);
+        void _impl_ID(std::vector<Twist> &v, std::vector<Twist> &dv, _T &base, Twist& last_t, Twist& last_dt);
 
     protected:
-        void act(_T , _T , std::map<int, Link *> &, std::function<void(int, _T)>);
+        void act(_T& , _T& , std::map<int, Link *> &, std::function<void(int, _T)>);
 
     public:
         int joint_id;

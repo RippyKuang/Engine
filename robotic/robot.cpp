@@ -3,7 +3,7 @@
 namespace Engine
 {
     void Joint::add_child_link(Cube &link)
-    {   
+    {
         _T pose = getTransformMat(EYE(3), origin);
         link.transform(pose);
         child_link.push_back(&link);
@@ -63,7 +63,7 @@ namespace Engine
         return this->info;
     }
 
-    void Joint_node::transform_origin(_T t, _T base)
+    void Joint_node::transform_origin(_T &t, _T &base)
     {
         this->trans = base * t * inv(base) * this->trans;
         _R r;
@@ -71,10 +71,9 @@ namespace Engine
         getRT(this->trans, r, tvec);
         Quaternion q = rotationMatrixToQuaternion(r);
         q.norm();
-        this->trans = getTransformMat(q.toRotationMat(), tvec);
-        
+        this->trans = getTransformMat(q.toRotationMat(), std::move(tvec));
     }
-    void Joint_node::act(_T t, _T base, std::map<int, Link *> &links, std::function<void(int, _T)> func)
+    void Joint_node::act(_T &t, _T &base, std::map<int, Link *> &links, std::function<void(int, _T)> func)
     {
 
         for (auto child_id : childs_link_id)
@@ -87,7 +86,7 @@ namespace Engine
             child->act(t, base, links, func);
         }
     }
-    void Joint_node::_impl_ID(std::vector<Twist> &v, std::vector<Twist> &dv, _T &base, Twist last_t, Twist last_dt)
+    void Joint_node::_impl_ID(std::vector<Twist> &v, std::vector<Twist> &dv, _T &base, Twist &last_t, Twist &last_dt)
     {
         ad_se3 last2this = adjoint(inv(base) * this->trans);
         Twist this_t = this->info->get_twist() + last2this * last_t;
@@ -102,8 +101,10 @@ namespace Engine
 
     void Joint_node::InvDynamics_forward(std::vector<Twist> &v, std::vector<Twist> &dv)
     {
-        for(auto child : childs)
-            child->_impl_ID(v, dv, this->trans, this->get_twist(), this->info->get_dtwist());
+        Twist this_t = this->info->get_twist();
+        Twist this_dt = this->info->get_dtwist();
+        for (auto child : childs)
+            child->_impl_ID(v, dv, this->trans, this_t, this_dt);
     }
 
     double Joint::forward(std::map<int, Link *> &links, Joint_node *tgt, double inc, std::function<void(int, _T)> func)
@@ -114,8 +115,7 @@ namespace Engine
             _T rot = getTransformMat(AngleAxis(inc, pinfo->axis), Vector3d());
             _T pose = tgt->get_pose();
             tgt->trans = pose * rot;
-            tgt->act(rot,pose, links, func);
-
+            tgt->act(rot, pose, links, func);
         }
         else if (tgt->get_info()->type == PRISMATIC)
         {
