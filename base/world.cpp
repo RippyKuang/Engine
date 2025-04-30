@@ -240,4 +240,10 @@ namespace Engine
         }
     }
 
+    void World::inverse_dynamics()
+    {
+        std::lock_guard<std::mutex> lock(m);
+        
+    }
+
 }

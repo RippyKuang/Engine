@@ -14,7 +14,7 @@ namespace Engine
     protected:
         _T init_pose;
         double mass;
-        Vector3d center;
+        Vector4d center;
         void transform(_T);
         std::vector<Vector4d> corners;
 

@@ -90,6 +90,7 @@ namespace Engine
             CONTINUOUS_INFO *pinfo = static_cast<CONTINUOUS_INFO *>(tgt->get_info());
             _T rot = getTransformMat(AngleAxis(inc, pinfo->axis), Vector3d());
             _T pose = tgt->get_pose();
+            tgt->trans = tgt->trans * rot;
             tgt->act(rot, pose, links, func);
         }
         else if (tgt->get_info()->type == PRISMATIC)
@@ -97,6 +98,7 @@ namespace Engine
             PRISMATIC_INFO *pinfo = static_cast<PRISMATIC_INFO *>(tgt->get_info());
             _T rot = getTransformMat(EYE(3), pinfo->axis * inc);
             _T pose = tgt->get_pose();
+            tgt->trans = tgt->trans * rot;
             tgt->act(rot, pose, links, func);
         }
         tgt->get_info()->pos = tgt->get_info()->pos + inc;

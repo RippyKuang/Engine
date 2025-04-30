@@ -93,6 +93,9 @@ namespace Engine
         {
             joint_id = -1;
             parent_link_id = -1;
+            trans = getTransformMat(EYE(3), Vector3d{0,0,0});
+            info = new FIXED_INFO();
+            info->acc = -9.8066;
         }
         Joint_node(int _id, Vector3d _origin, INFO *_info) : joint_id(_id), info(_info)
         {

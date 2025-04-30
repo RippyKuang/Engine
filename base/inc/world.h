@@ -22,6 +22,7 @@ namespace Engine
         std::map<int, _T> pose;
         int num_joints;
         Timer timer;
+        Timer global_timer;
         Joint_node graph;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
@@ -43,6 +44,7 @@ namespace Engine
         void set_speed(int id, double speed);
         void set_acc(int id, double acc);
         void project(std::vector<Point2i>&);
+        void inverse_dynamics();
 
         template <int Index, int Num, typename Enable = void>
         struct BuildJacobian;
