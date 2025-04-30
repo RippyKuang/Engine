@@ -143,14 +143,13 @@ namespace Engine
     {
         for (int i = 0; i < corners.size(); i++)
         {
-            Vector3d p = corners[i];
-
-            if (LineIntersectQuadrilateral(p, item[0], item[1], item[5], item[4]) ||
-                LineIntersectQuadrilateral(p, item[0], item[1], item[3], item[2]) ||
-                LineIntersectQuadrilateral(p, item[0], item[4], item[6], item[2]) ||
-                LineIntersectQuadrilateral(p, item[2], item[6], item[7], item[3]) ||
-                LineIntersectQuadrilateral(p, item[4], item[6], item[7], item[5]) ||
-                LineIntersectQuadrilateral(p, item[1], item[3], item[7], item[5]))
+           
+            if (LineIntersectQuadrilateral(corners[i], item[0], item[1], item[5], item[4]) ||
+                LineIntersectQuadrilateral(corners[i], item[0], item[1], item[3], item[2]) ||
+                LineIntersectQuadrilateral(corners[i], item[0], item[4], item[6], item[2]) ||
+                LineIntersectQuadrilateral(corners[i], item[2], item[6], item[7], item[3]) ||
+                LineIntersectQuadrilateral(corners[i], item[4], item[6], item[7], item[5]) ||
+                LineIntersectQuadrilateral(corners[i], item[1], item[3], item[7], item[5]))
                 visible[i] = false;
         }
     }

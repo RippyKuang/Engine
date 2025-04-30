@@ -62,17 +62,17 @@ namespace Engine
     {
         std::lock_guard<std::mutex> lock(m);
         cairo_set_source_rgb(cr, 0, 0, 0);
-        for (auto data : datas)
+        for (int i = 0; i < datas.size(); i++)
         {
-            cairo_arc(cr, w - data[0], h - data[1], 1, 0, 2 * G_PI);
+            cairo_arc(cr, w - datas[i][0], h - datas[i][1], 1, 0, 2 * G_PI);
             cairo_fill(cr);
         }
         if (this->frame_datas.size() != 0)
         {
             cairo_set_source_rgb(cr, 255, 0, 0);
-            for (auto data : frame_datas)
+            for (int i = 0; i < frame_datas.size(); i++)
             {
-                cairo_arc(cr, w - data[0], h - data[1], 5, 0, 2 * G_PI);
+                cairo_arc(cr, w - frame_datas[i][0], h - frame_datas[i][1], 5, 0, 2 * G_PI);
                 cairo_fill(cr);
             }
             for (int i = 0; i < frame_datas.size() / 4; i++)
@@ -82,7 +82,7 @@ namespace Engine
                 LINE(w - frame_datas[4 * i][0], h - frame_datas[4 * i][1], w - frame_datas[4 * i + 3][0], h - frame_datas[4 * i + 3][1], cr);
             }
             cairo_stroke(cr);
-         //   this->frame_datas.clear();
+            //   this->frame_datas.clear();
         }
 
         cairo_destroy(cr);

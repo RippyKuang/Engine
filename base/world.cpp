@@ -12,7 +12,7 @@ namespace Engine
 
     void World::act(int id, _T t)
     {
-        (*links.at(id)).transform(t);
+        (*links.at(id)).transform(std::move(t));
     }
 
     double World::drive(int id)
@@ -98,8 +98,8 @@ namespace Engine
         for (auto id : ids)
         {
             Joint_node *tgt = graph.find(id);
-         //   poses.push_back(tgt->get_pose()*(links[tgt->childs_link_id[0]]->init_pose)); 
-            poses.push_back(tgt->get_pose()); 
+            //   poses.push_back(tgt->get_pose()*(links[tgt->childs_link_id[0]]->init_pose));
+            poses.push_back(tgt->get_pose());
         }
 
         return std::move(poses);
@@ -182,7 +182,8 @@ namespace Engine
             }
             std::vector<Point2i> tprojs;
             cam.project(discreted_pw, tprojs, visible);
-            projs.insert(projs.end(), tprojs.begin(), tprojs.end());
+            projs.insert(projs.end(), std::make_move_iterator(tprojs.begin()),
+                         std::make_move_iterator(tprojs.end()));
             iter++;
         }
     }

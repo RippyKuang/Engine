@@ -13,8 +13,12 @@ namespace Engine
         Vector3d axis;
 
     public:
-        AngleAxis(double _angle, Vector3d _axis) : Vector3d(_axis * _angle),
-                                                   angle(_angle), axis(_axis)
+        AngleAxis(double _angle, Vector3d &_axis) : Vector3d(_axis * _angle),
+                                                    angle(_angle), axis(_axis)
+        {
+        }
+        AngleAxis(double _angle, Vector3d &&_axis) : Vector3d(_axis * _angle),
+                                                    angle(_angle), axis(_axis)
         {
         }
         _R toRotationMat();
@@ -38,9 +42,9 @@ namespace Engine
 
     _T getTransformMat(AngleAxis aa, Vector3d t);
     _T getTransformMat(_R aa, Vector3d t);
-    void getRT(_T& t, _R &r, Vector3d &tvec);
-    _T inv(_T&& t);
-    _T inv(_T& t);
+    void getRT(_T &t, _R &r, Vector3d &tvec);
+    _T inv(_T &&t);
+    _T inv(_T &t);
     _R rpy2rot(Vector3d rpy);
     std::vector<Vector3d> to_3d(std::vector<Vector4d> &);
     std::vector<Vector3d> to_3d(std::vector<Vector4d> &&);

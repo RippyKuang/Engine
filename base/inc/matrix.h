@@ -31,7 +31,6 @@ namespace Engine
 
         Matrix(const Matrix<_Scalar, _Rows, _Cols> &m)
         {
-           
             data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = m[i];
