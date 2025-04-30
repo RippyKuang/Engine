@@ -6,7 +6,6 @@ namespace Engine
     {
         for (auto it = this->corners.begin(); it != this->corners.end(); it++)
             *it = t * (*it);
-        this->center = t * this->center;
     }
 
     Link::Link(std::vector<Vector3d> _corners)
@@ -33,6 +32,11 @@ namespace Engine
         corners.push_back(Vector4d{-x / 2, +y / 2, -z / 2, 1});
         init_pose = getTransformMat(rpy2rot(rpy), xyz);
         transform(init_pose);
+        _T inv_pose = inv(init_pose);
+        _R I = {mass * (y + z) / 12, 0, 0,
+                0, mass * (x + z) / 12, 0,
+                0, 0, mass * (x + y) / 12};
+        this->inertia = adjoint(inv_pose).T() * (catRow(catCol(I,_R()),catCol(_R(), EYE(3) * mass ))) * adjoint(inv_pose);
     }
 
 }

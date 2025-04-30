@@ -124,8 +124,8 @@ namespace Engine
         _T get_pose() const;
         INFO *get_info() const;
 
-        void InvDynamics(std::vector<Twist> &v, std::vector<Twist> &dv);
-        void Jacobian(std::vector<Matrix<double, 6, 1>> &v)
+        void InvDynamics_forward(std::vector<Twist> &v, std::vector<Twist> &dv);
+        void Jacobian(std::vector<Twist> &v)
         {
             if (this->parent_link_id != -1)
             {

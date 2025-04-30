@@ -10,10 +10,7 @@
 //       ---------/
 
 using namespace Engine;
-// 0.24710821876169423,-0.96873772120026502 ,0,0.23993644279828058,
-// 0.96873772120026502,0.24710821876169423,0,0.24826958617768863,
-// 0,0,1,0
-// 0,0,0,1
+
 int main(int argc, char *argv[])
 {
     Engine::GFrame frame(argc, argv);
@@ -44,20 +41,22 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        _T t0 = w.get_pose(0);
-        _T t1 = w.get_pose(1);
-        _T t2 = w.get_pose(2);
-        _T t3 = w.get_pose(3);
+        std::vector<_T> t = w.get_pose({0,1,2,3});
+    
         std::vector<Engine::Point2i> frame_projs;
-        w.project_frame(frame_projs, t0);
-        w.project_frame(frame_projs, t1);
-        w.project_frame(frame_projs, t2);
-        w.project_frame(frame_projs, t3);
+        w.project_frame(frame_projs, t);
+      
 
         std::vector<Twist> v;
         std::vector<Twist> dv;
         w.inverse_dynamics(v, dv);
-
+        std::vector<Twist> j = w.Jacobian();
+        
+        std::cout << "dv0: " << dv[0] << std::endl;
+        std::cout << "dv1: " << dv[1] << std::endl;
+        std::cout << "dv2: " << dv[2] << std::endl;
+        std::cout << "dv3: " << dv[3] << std::endl;
+      
         std::vector<Engine::Point2i> projs;
         w.project(projs);
         frame.updateData(projs,frame_projs);

@@ -34,6 +34,8 @@ namespace Engine
 
     class Cube : public Link
     {
+    private:
+        ad_se3 inertia;
     public:
         Cube(std::vector<Vector4d> _corners) : Link(_corners)
         {

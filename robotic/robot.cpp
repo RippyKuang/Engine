@@ -6,7 +6,6 @@ namespace Engine
     {   
         _T pose = getTransformMat(EYE(3), origin);
         link.transform(pose);
-        link.init_pose = pose;
         child_link.push_back(&link);
     }
 
@@ -101,9 +100,10 @@ namespace Engine
         }
     }
 
-    void Joint_node::InvDynamics(std::vector<Twist> &v, std::vector<Twist> &dv)
+    void Joint_node::InvDynamics_forward(std::vector<Twist> &v, std::vector<Twist> &dv)
     {
-        this->_impl_ID(v, dv, this->trans, this->get_twist(), this->info->get_dtwist());
+        for(auto child : childs)
+            child->_impl_ID(v, dv, this->trans, this->get_twist(), this->info->get_dtwist());
     }
 
     double Joint::forward(std::map<int, Link *> &links, Joint_node *tgt, double inc, std::function<void(int, _T)> func)
@@ -122,10 +122,10 @@ namespace Engine
             PRISMATIC_INFO *pinfo = static_cast<PRISMATIC_INFO *>(tgt->get_info());
             _T rot = getTransformMat(EYE(3), pinfo->axis * inc);
             _T pose = tgt->get_pose();
-           // tgt->trans = pose * rot;
+            tgt->trans = pose * rot;
             tgt->act(rot, pose, links, func);
         }
-      //  tgt->get_info()->pos = tgt->get_info()->pos + inc;
+        tgt->get_info()->pos = tgt->get_info()->pos + inc;
         return tgt->get_info()->pos;
     }
 

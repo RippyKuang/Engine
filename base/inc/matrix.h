@@ -87,7 +87,7 @@ namespace Engine
                 for (int c = 0; c < _Rows; c++)
                     m[r * _Rows + c] = this->data[c * _Cols + r];
 
-            return m;
+            return std::move(m);
         }
 
         Matrix operator+(const Matrix &b)

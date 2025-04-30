@@ -8,29 +8,13 @@ namespace Engine
         Link *j = (Link *)malloc(sizeof(Cube));
         memcpy(j, &i, sizeof(Cube));
         links.insert(std::pair<int, Link *>(id, j));
-        pose.insert(std::pair<int, _T>(id, i.init_pose));
     }
 
-    void World::act(int id, _T t, int base)
+    void World::act(int id, _T t)
     {
-       
-        (*links.at(id)).transform(t);   
+        (*links.at(id)).transform(t);
     }
-    void World::act(int id, _R r, int base)
-    {
 
-        auto t = catRow(catCol(r, Vector3d()), catCol(Vector3d().T(), EYE(1)));
-        if (id != base)
-        {
-            pose[id] = (pose[base] * t * inv(pose[base])) * pose[id];
-            (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
-        }
-        else
-        {
-            (*links.at(id)).transform((pose[base] * t * inv(pose[base])));
-            pose[id] = pose[base] * t;
-        }
-    }
     double World::drive(int id)
     {
         std::lock_guard<std::mutex> lock(m);
@@ -38,13 +22,13 @@ namespace Engine
         INFO *info = tgt->get_info();
 
         info->speed += info->acc * 1e-3;
-        if(info->speed ==0)
+        if (info->speed == 0)
         {
-            return 0 ;
+            return 0;
         }
-        double inc = info->speed * 1e-3 ;
+        double inc = info->speed * 1e-3;
 
-        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
+        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T))&World::act, this, _1, _2);
 
         if (info->type == FIXED)
             throw "Driving a fixed joint!";
@@ -71,7 +55,7 @@ namespace Engine
         Joint_node *tgt = graph.find(id);
         INFO *info = tgt->get_info();
 
-        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T, int))&World::act, this, _1, _2, -1);
+        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T))&World::act, this, _1, _2);
 
         if (info->type == FIXED)
             throw "Driving a fixed joint!";
@@ -108,11 +92,17 @@ namespace Engine
         info->acc = acc;
     }
 
-    _T World::get_pose(int id)
+    std::vector<_T> World::get_pose(std::initializer_list<int> ids)
     {
-        std::lock_guard<std::mutex> lock(m);
-        Joint_node *tgt = graph.find(id);
-        return tgt->get_pose();
+        std::vector<_T> poses;
+        for (auto id : ids)
+        {
+            Joint_node *tgt = graph.find(id);
+         //   poses.push_back(tgt->get_pose()*(links[tgt->childs_link_id[0]]->init_pose)); 
+            poses.push_back(tgt->get_pose()); 
+        }
+
+        return std::move(poses);
     }
 
     void World::discrete(std::vector<Vector3d> &pw, std::vector<Vector3d> &discreted_pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
@@ -144,16 +134,18 @@ namespace Engine
 #undef DISCRETE_LINE
 #undef PART_DISCRETE
     }
-    void World::project_frame(std::vector<Point2i>& projs , _T& trans)
+    void World::project_frame(std::vector<Point2i> &projs, std::vector<_T> &t)
     {
-        _T to_cam = inv(this->pose[-2])*trans;
-        Vector4d origin = to_cam * Vector4d{0,0,0,1};
-        Vector4d x = to_cam * Vector4d{0.05,0,0,1};
-        Vector4d y = to_cam * Vector4d{0,0.05,0,1};
-        Vector4d z = to_cam * Vector4d{0,0,0.05,1};
-        std::vector<Vector3d> cube_in_camera = to_3d(std::vector<Vector4d>{origin, x, y, z});
-        cam.project_all(cube_in_camera, projs);
-
+        for (auto trans : t)
+        {
+            _T to_cam = inv(this->pose[-2]) * trans;
+            Vector4d origin = to_cam * Vector4d{0, 0, 0, 1};
+            Vector4d x = to_cam * Vector4d{0.05, 0, 0, 1};
+            Vector4d y = to_cam * Vector4d{0, 0.05, 0, 1};
+            Vector4d z = to_cam * Vector4d{0, 0, 0.05, 1};
+            std::vector<Vector3d> cube_in_camera = to_3d(std::vector<Vector4d>{origin, x, y, z});
+            cam.project_all(cube_in_camera, projs);
+        }
     }
     void World::project(std::vector<Point2i> &projs)
     {
@@ -198,7 +190,7 @@ namespace Engine
     {
         Link it = *links.at(id);
         it.transform(inv(pose[base]));
-        return it.corners;
+        return std::move(it.corners);
     }
 
     void World::parse_robot(std::initializer_list<Joint> jo)
@@ -252,11 +244,11 @@ namespace Engine
         }
     }
 
-    void World::inverse_dynamics(std::vector<Twist> & v, std::vector<Twist> & dv)
+    void World::inverse_dynamics(std::vector<Twist> &v, std::vector<Twist> &dv)
     {
         std::lock_guard<std::mutex> lock(m);
 
-        this->graph.InvDynamics(v,dv);
+        this->graph.InvDynamics_forward(v, dv);
     }
 
 }
