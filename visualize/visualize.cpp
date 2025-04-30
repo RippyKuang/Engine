@@ -60,21 +60,42 @@ namespace Engine
     }
     void GFrame::processData(cairo_t *cr)
     {
-         std::lock_guard<std::mutex> lock(m);
+        std::lock_guard<std::mutex> lock(m);
         cairo_set_source_rgb(cr, 0, 0, 0);
         for (auto data : datas)
         {
             cairo_arc(cr, w - data[0], h - data[1], 1, 0, 2 * G_PI);
             cairo_fill(cr);
-        }    
+        }
+        if (this->frame_datas.size() != 0)
+        {
+            cairo_set_source_rgb(cr, 255, 0, 0);
+            for (auto data : frame_datas)
+            {
+                cairo_arc(cr, w - data[0], h - data[1], 5, 0, 2 * G_PI);
+                cairo_fill(cr);
+            }
+            for (int i = 0; i < frame_datas.size() / 4; i++)
+            {
+                LINE(w - frame_datas[4 * i][0], h - frame_datas[4 * i][1], w - frame_datas[4 * i + 1][0], h - frame_datas[4 * i + 1][1], cr);
+                LINE(w - frame_datas[4 * i][0], h - frame_datas[4 * i][1], w - frame_datas[4 * i + 2][0], h - frame_datas[4 * i + 2][1], cr);
+                LINE(w - frame_datas[4 * i][0], h - frame_datas[4 * i][1], w - frame_datas[4 * i + 3][0], h - frame_datas[4 * i + 3][1], cr);
+            }
+            cairo_stroke(cr);
+         //   this->frame_datas.clear();
+        }
+
         cairo_destroy(cr);
     }
-    void GFrame::updateData(std::vector<Point2i> data)
-    {   
+    void GFrame::updateData(std::vector<Point2i> &data, std::vector<Point2i> frame_data)
+    {
         std::lock_guard<std::mutex> lock(m);
         this->datas = data;
+        if (frame_data.size() == 0)
+            return;
+        this->frame_datas = frame_data;
     }
-    
+
     GFrame::GFrame(int argc, char *argv[])
     {
         gtk_init(&argc, &argv);

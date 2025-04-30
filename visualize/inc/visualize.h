@@ -28,7 +28,8 @@ namespace Engine
         cairo_surface_t *surface = NULL;
         void clear_surface(void);
         void processData(cairo_t *);
-        std::vector<Point2i> datas;
+        std::vector<Point2i> datas; 
+        std::vector<Point2i> frame_datas;
         std::mutex m;
         const int w = 1280;
         const int h = 1024;
@@ -41,6 +42,6 @@ namespace Engine
     public:
         GFrame(int argc, char *argv[]);
         void show();
-        void updateData(std::vector<Point2i> data);
+        void updateData(std::vector<Point2i>& data,std::vector<Point2i> frame_data={});
     };
 }

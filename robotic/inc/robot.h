@@ -20,23 +20,27 @@ namespace Engine
     typedef struct _INFO
     {
         JOINT_TYPE type = FIXED;
+        Vector3d axis;
         double speed = 0;
         double pos = 0;
         double acc = 0;
-        _INFO(double p = 0) : pos(p)
+        _INFO(double p = 0, Vector3d axis = {0, 0, 0}) : pos(p), axis(axis)
         {
         }
         virtual Twist get_twist()
         {
             return Twist();
         }
+        virtual Twist get_dtwist()
+        {
+            return Twist(Vector3d(), axis * acc);
+        }
     } INFO;
     typedef INFO FIXED_INFO;
     typedef struct _PRISMATIC_INFO : INFO
     {
-        Vector3d axis;
 
-        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : INFO(pos), axis(_axis)
+        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : INFO(pos, _axis)
         {
             type = PRISMATIC;
         }
@@ -44,19 +48,27 @@ namespace Engine
         {
             return Twist(Vector3d(), axis * speed);
         }
+        Twist get_dtwist() override
+        {
+            return Twist(Vector3d(), axis * acc);
+        }
+
     } PRISMATIC_INFO;
 
     typedef struct _CONTINUOUS_INFO : INFO
     {
-        Vector3d axis;
 
-        _CONTINUOUS_INFO(Vector3d _axis, double pos = 0) : INFO(pos), axis(_axis)
+        _CONTINUOUS_INFO(Vector3d _axis, double pos = 0) : INFO(pos, _axis)
         {
             type = CONTINUOUS;
         }
         virtual Twist get_twist() override
         {
             return Twist(axis * speed, Vector3d());
+        }
+        Twist get_dtwist() override
+        {
+            return Twist(axis * acc, Vector3d());
         }
     } CONTINUOUS_INFO;
 
@@ -82,10 +94,11 @@ namespace Engine
         INFO *info;
         std::vector<Joint_node *> childs;
         std::vector<int> childs_link_id;
-        void transform_origin(_T &, _T &);
+        void transform_origin(_T,_T);
+        void _impl_ID(std::vector<Twist> &v, std::vector<Twist> &dv, _T &base, Twist last_t, Twist last_dt);
 
     protected:
-        void act(_T &, _T &, std::map<int, Link *> &, std::function<void(int, _T)>);
+        void act(_T , _T , std::map<int, Link *> &, std::function<void(int, _T)>);
 
     public:
         int joint_id;
@@ -93,8 +106,8 @@ namespace Engine
         {
             joint_id = -1;
             parent_link_id = -1;
-            trans = getTransformMat(EYE(3), Vector3d{0,0,0});
-            info = new FIXED_INFO();
+            trans = getTransformMat(EYE(3), Vector3d{0, 0, 0});
+            info = new FIXED_INFO(0, Vector3d{0, 0, 1});
             info->acc = -9.8066;
         }
         Joint_node(int _id, Vector3d _origin, INFO *_info) : joint_id(_id), info(_info)
@@ -106,11 +119,12 @@ namespace Engine
         void set_parent_link_id(int);
         int get_parent_link_id();
         Joint_node *find(int);
+        Twist get_twist();
         Joint_node *insert(int, const Joint *);
         _T get_pose() const;
-        Twist get_twist() const;
         INFO *get_info() const;
 
+        void InvDynamics(std::vector<Twist> &v, std::vector<Twist> &dv);
         void Jacobian(std::vector<Matrix<double, 6, 1>> &v)
         {
             if (this->parent_link_id != -1)

@@ -3,8 +3,10 @@
 namespace Engine
 {
     void Joint::add_child_link(Cube &link)
-    {
-        link.transform(getTransformMat(EYE(3), origin));
+    {   
+        _T pose = getTransformMat(EYE(3), origin);
+        link.transform(pose);
+        link.init_pose = pose;
         child_link.push_back(&link);
     }
 
@@ -51,7 +53,7 @@ namespace Engine
         return this->trans;
     }
 
-    Twist Joint_node::get_twist() const
+    Twist Joint_node::get_twist()
     {
 
         return adjoint(this->trans) * (this->info->get_twist());
@@ -62,25 +64,46 @@ namespace Engine
         return this->info;
     }
 
-    void Joint_node::transform_origin(_T &t, _T &base)
+    void Joint_node::transform_origin(_T t, _T base)
     {
         this->trans = base * t * inv(base) * this->trans;
+        _R r;
+        Vector3d tvec;
+        getRT(this->trans, r, tvec);
+        Quaternion q = rotationMatrixToQuaternion(r);
+        q.norm();
+        this->trans = getTransformMat(q.toRotationMat(), tvec);
+        
     }
-    void Joint_node::act(_T &t, _T &base, std::map<int, Link *> &links, std::function<void(int, _T)> func)
+    void Joint_node::act(_T t, _T base, std::map<int, Link *> &links, std::function<void(int, _T)> func)
     {
 
         for (auto child_id : childs_link_id)
         {
-
-            func(child_id, inv(base));
-            func(child_id, t);
-            func(child_id, base);
+            func(child_id, base * t * inv(base));
         }
         for (auto child : childs)
         {
             child->transform_origin(t, base);
             child->act(t, base, links, func);
         }
+    }
+    void Joint_node::_impl_ID(std::vector<Twist> &v, std::vector<Twist> &dv, _T &base, Twist last_t, Twist last_dt)
+    {
+        ad_se3 last2this = adjoint(inv(base) * this->trans);
+        Twist this_t = this->info->get_twist() + last2this * last_t;
+        Twist this_dt = this->info->get_dtwist() + last2this * last_dt + bracket(this_t, this->info->get_twist());
+        v.push_back(this_t);
+        dv.push_back(this_dt);
+        for (auto child : childs)
+        {
+            child->_impl_ID(v, dv, this->trans, this_t, this_dt);
+        }
+    }
+
+    void Joint_node::InvDynamics(std::vector<Twist> &v, std::vector<Twist> &dv)
+    {
+        this->_impl_ID(v, dv, this->trans, this->get_twist(), this->info->get_dtwist());
     }
 
     double Joint::forward(std::map<int, Link *> &links, Joint_node *tgt, double inc, std::function<void(int, _T)> func)
@@ -90,18 +113,19 @@ namespace Engine
             CONTINUOUS_INFO *pinfo = static_cast<CONTINUOUS_INFO *>(tgt->get_info());
             _T rot = getTransformMat(AngleAxis(inc, pinfo->axis), Vector3d());
             _T pose = tgt->get_pose();
-            tgt->trans = tgt->trans * rot;
-            tgt->act(rot, pose, links, func);
+            tgt->trans = pose * rot;
+            tgt->act(rot,pose, links, func);
+
         }
         else if (tgt->get_info()->type == PRISMATIC)
         {
             PRISMATIC_INFO *pinfo = static_cast<PRISMATIC_INFO *>(tgt->get_info());
             _T rot = getTransformMat(EYE(3), pinfo->axis * inc);
             _T pose = tgt->get_pose();
-            tgt->trans = tgt->trans * rot;
+           // tgt->trans = pose * rot;
             tgt->act(rot, pose, links, func);
         }
-        tgt->get_info()->pos = tgt->get_info()->pos + inc;
+      //  tgt->get_info()->pos = tgt->get_info()->pos + inc;
         return tgt->get_info()->pos;
     }
 

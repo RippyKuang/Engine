@@ -22,10 +22,12 @@ namespace Engine
         std::map<int, _T> pose;
         int num_joints;
         Timer timer;
-        Timer global_timer;
         Joint_node graph;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
+        double drive(int id);
+        void act(int id, _T t, int base = -1);
+        void act(int id, _R t, int base = -1);
         void discrete(std::vector<Vector3d> &,std::vector<Vector3d>&, std::vector<Point2i> &, std::vector<bool> &);
 
     public:
@@ -36,15 +38,15 @@ namespace Engine
             pose.insert(std::pair<int, _T>(-2, _cam.init_pose));
         }
         void emplace(Cube &, int);
-        void act(int id, _T t, int base = -1);
-        void act(int id, _R t, int base = -1);
+
         void parse_robot(std::initializer_list<Joint>);
-        double drive(int id);
         double drive(int id, double inc);
         void set_speed(int id, double speed);
         void set_acc(int id, double acc);
+        _T  get_pose(int id);
+        void project_frame(std::vector<Point2i>&, _T&);
         void project(std::vector<Point2i>&);
-        void inverse_dynamics();
+        void inverse_dynamics(std::vector<Twist>&, std::vector<Twist>&);
 
         template <int Index, int Num, typename Enable = void>
         struct BuildJacobian;
