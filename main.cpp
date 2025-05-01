@@ -50,13 +50,7 @@ int main(int argc, char *argv[])
         std::vector<Twist> v;
         std::vector<Twist> dv;
         w.inverse_dynamics(v, dv);
-     //   std::vector<Twist> j = w.Jacobian();
-        
-        // std::cout << "dv0: " << dv[0] << std::endl;
-        // std::cout << "dv1: " << dv[1] << std::endl;
-        // std::cout << "dv2: " << dv[2] << std::endl;
-        // std::cout << "dv3: " << dv[3] << std::endl;
-      
+   
         std::vector<Engine::Point2i> projs;
         w.project(projs);
         frame.updateData(projs,std::move(frame_projs));
