@@ -22,9 +22,11 @@ namespace Engine
                 (*this)[i] = v;
         }
 
-        Twist(const Matrix<double, 6, 1> &m) : Matrix<double, 6, 1>(m)
+        template <typename T, typename = typename std::enable_if<std::is_base_of<Matrix, T>::value>::type>
+        Twist(T &&m) : T(std::forward<T>(m))
         {
         }
+
         Twist(const Matrix<double, 3, 1> &v, const Matrix<double, 3, 1> &w)
         {
             (*this)[0] = v[0];
@@ -35,9 +37,9 @@ namespace Engine
             (*this)[5] = w[2];
         }
     };
-    
-    template<typename T1,typename T2>
-    inline Twist bracket(T1&& v1, T2&& v2)
+
+    template <typename T1, typename T2>
+    inline Twist bracket(T1 &&v1, T2 &&v2)
     {
         Vector3d v1_w{v1[0], v1[1], v1[2]};
         Vector3d v1_v{v1[3], v1[4], v1[5]};

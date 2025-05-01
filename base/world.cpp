@@ -144,6 +144,7 @@ namespace Engine
             Vector4d y = to_cam * Vector4d{0, 0.05, 0, 1};
             Vector4d z = to_cam * Vector4d{0, 0, 0.05, 1};
             std::vector<Vector3d> cube_in_camera = to_3d(std::vector<Vector4d>{origin, x, y, z});
+            projs.reserve(cube_in_camera.size());
             cam.project_all(cube_in_camera, projs);
         }
     }
@@ -161,16 +162,17 @@ namespace Engine
                 _iter++;
             }
         }
-
+        projs.reserve(450*cubes.size());
         auto iter = cubes.begin();
+
         while (iter != cubes.end())
         {
-            std::vector<Vector3d> cube_in_camera = *iter;
+            std::vector<Vector3d>& cube_in_camera = *iter;
             std::vector<bool> visible(cube_in_camera.size(), true);
             remove_self_hidden(cube_in_camera, visible);
-            std::vector<Point2i> pseudo_tprojs;
+           
             cam.project(cube_in_camera, pseudo_tprojs, visible, true);
-            std::vector<Vector3d> discreted_pw;
+            
             discrete(cube_in_camera, discreted_pw, pseudo_tprojs, visible);
             auto temp_iter = cubes.begin();
             visible.assign(discreted_pw.size(), true);
@@ -180,11 +182,14 @@ namespace Engine
                     remove_inter_hidden(discreted_pw, *temp_iter, visible);
                 temp_iter++;
             }
-            std::vector<Point2i> tprojs;
+         
             cam.project(discreted_pw, tprojs, visible);
             projs.insert(projs.end(), std::make_move_iterator(tprojs.begin()),
                          std::make_move_iterator(tprojs.end()));
             iter++;
+            tprojs.clear();
+            pseudo_tprojs.clear();
+            discreted_pw.clear();
         }
     }
     std::vector<Vector4d> World::getCoord(int id, int base)

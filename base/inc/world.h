@@ -11,6 +11,7 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
 
+#define PRE_ALLOC 450
 namespace Engine
 {
     class World
@@ -29,12 +30,18 @@ namespace Engine
         void act(int id, _T t);
         void discrete(std::vector<Vector3d> &, std::vector<Vector3d> &, std::vector<Point2i> &, std::vector<bool> &);
 
+        std::vector<Point2i> tprojs;
+        std::vector<Point2i> pseudo_tprojs;
+        std::vector<Vector3d> discreted_pw;
     public:
         std::map<int, Link *> links;
         World(Camera &_cam) : cam(_cam)
         {
             pose.insert(std::pair<int, _T>(-1, EYE(4)));
             pose.insert(std::pair<int, _T>(-2, _cam.init_pose));
+            tprojs.reserve(PRE_ALLOC);
+            discreted_pw.reserve(PRE_ALLOC);
+            pseudo_tprojs.reserve(15);
         }
         void emplace(Cube &, int);
         void parse_robot(std::initializer_list<Joint>);

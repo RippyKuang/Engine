@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
       
         std::vector<Engine::Point2i> projs;
         w.project(projs);
-        frame.updateData(projs,frame_projs);
+        frame.updateData(projs,std::move(frame_projs));
     }
     return 0;
 }

@@ -121,7 +121,7 @@ namespace Engine
         Joint_node *find(int);
         Twist get_twist();
         Joint_node *insert(int, const Joint *);
-        _T get_pose() const;
+        const _T&  get_pose() const;
         INFO *get_info() const;
 
         void InvDynamics_forward(std::vector<Twist> &v, std::vector<Twist> &dv);

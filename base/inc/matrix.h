@@ -38,7 +38,7 @@ namespace Engine
 
         Matrix(Matrix<_Scalar, _Rows, _Cols> &&m)
         {
-       
+
             this->data = m.data;
             m.data = nullptr;
         }
@@ -62,7 +62,7 @@ namespace Engine
         }
         ~Matrix()
         {
-        
+
             free(this->data);
         }
 
@@ -74,6 +74,27 @@ namespace Engine
             for (int i = 0; i < _Rows * _Cols; i++, it++)
                 this->data[i] = *it;
         }
+
+
+        void _impl_args(int index, const _Scalar &t)
+        {
+            this->data[index] = t;
+        }
+
+        template <typename... Args>
+        void _impl_args(int index, const _Scalar &t, const Args &...rest)
+        {
+            this->data[index] = t;
+            _impl_args(index + 1, rest...);
+        }
+        template <typename... Args>
+        Matrix(const _Scalar &t, const Args &...rest)
+        {
+            this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof...(rest) * sizeof(_Scalar));
+            this->data[0] = t;
+            _impl_args(1, rest...);
+        }
+
         std::tuple<int, int> getShape()
         {
             return std::tuple<int, int>(row, col);
@@ -141,7 +162,7 @@ namespace Engine
         }
         Matrix &operator=(const Matrix &b)
         {
-        
+
             this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 this->data[i] = b[i];
@@ -149,7 +170,7 @@ namespace Engine
         }
         Matrix &operator=(Matrix &&b)
         {
-          
+
             this->data = b.data;
             b.data = nullptr;
             return *this;

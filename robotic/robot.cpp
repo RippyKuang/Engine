@@ -47,7 +47,7 @@ namespace Engine
         return tgt->add_child(jo);
     }
 
-    _T Joint_node::get_pose() const
+    const _T &Joint_node::get_pose() const
     {
         return this->trans;
     }
@@ -113,17 +113,15 @@ namespace Engine
         {
             CONTINUOUS_INFO *pinfo = static_cast<CONTINUOUS_INFO *>(tgt->get_info());
             _T rot = getTransformMat(AngleAxis(inc, pinfo->axis), Vector3d());
-            _T pose = tgt->get_pose();
-            tgt->trans = pose * rot;
-            tgt->act(rot, pose, links, func);
+            tgt->act(rot, tgt->trans, links, func);
+            tgt->trans = tgt->trans * rot;
         }
         else if (tgt->get_info()->type == PRISMATIC)
         {
             PRISMATIC_INFO *pinfo = static_cast<PRISMATIC_INFO *>(tgt->get_info());
             _T rot = getTransformMat(EYE(3), pinfo->axis * inc);
-            _T pose = tgt->get_pose();
-            tgt->trans = pose * rot;
-            tgt->act(rot, pose, links, func);
+            tgt->act(rot, tgt->trans, links, func);
+            tgt->trans = tgt->trans * rot;
         }
         tgt->get_info()->pos = tgt->get_info()->pos + inc;
         return tgt->get_info()->pos;

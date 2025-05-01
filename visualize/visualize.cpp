@@ -90,7 +90,7 @@ namespace Engine
     void GFrame::updateData(std::vector<Point2i> &data, std::vector<Point2i> frame_data)
     {
         std::lock_guard<std::mutex> lock(m);
-        this->datas = data;
+        this->datas.swap(data);
         if (frame_data.size() == 0)
             return;
         this->frame_datas = frame_data;

@@ -17,7 +17,7 @@ namespace Engine
             if (!visible[i] && !keep_all)
                 continue;
             Vector3d temp = this->intrisics * Vector3d{pw[i][1] / pw[i][0], pw[i][2] / pw[i][0], 1};
-            corners.push_back(Point2i(temp));
+            corners.emplace_back(int(temp[0]), int(temp[1]));
         }
     }
 
@@ -27,7 +27,7 @@ namespace Engine
         for (int i = 0; i < pw.size(); i++)
         {
             Vector3d temp = this->intrisics * Vector3d{pw[i][1] / pw[i][0], pw[i][2] / pw[i][0], 1};
-            corners.push_back(Point2i(temp));
+            corners.emplace_back(int(temp[0]), int(temp[1]));
         }
     }
 }
