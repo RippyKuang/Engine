@@ -1,5 +1,5 @@
 #pragma once
-#include <matrix.h>
+#include <geometry.h>
 
 namespace Engine
 {
@@ -24,10 +24,8 @@ namespace Engine
         template <typename T,typename = typename std::enable_if<std::is_base_of<Mesh,T>::value>::type>
         Mesh(T&& t) : nv(t.nv), nt(t.nt)
         {
-            std::cout << "move" << std::endl;
             this->vertices = std::move(t.vertices);
             this->tInd= std::move(t.tInd);
-         
         }
         void _transform(_T t)
         {
@@ -47,7 +45,7 @@ namespace Engine
             double y = box[1];
             double z = box[2];
 
-            vertices.emplace_back(+x / 2, -y / 2, +z / 2, 1.0);
+            vertices.emplace_back(+x / 2, -y / 2, +z / 2, 1);
             vertices.emplace_back(+x / 2, -y / 2, -z / 2, 1);
             vertices.emplace_back(+x / 2, +y / 2, +z / 2, 1);
             vertices.emplace_back(+x / 2, +y / 2, -z / 2, 1);
@@ -57,18 +55,18 @@ namespace Engine
             vertices.emplace_back(-x / 2, +y / 2, +z / 2, 1);
             vertices.emplace_back(-x / 2, +y / 2, -z / 2, 1);
 
-            tInd.emplace_back(4, 6, 2);
-            tInd.emplace_back(4, 2, 0);
+            tInd.emplace_back(4, 2, 6);
             tInd.emplace_back(4, 0, 2);
-            tInd.emplace_back(4, 2, 5);
-            tInd.emplace_back(4, 5, 7);
-            tInd.emplace_back(4, 7, 6);
-            tInd.emplace_back(3, 5, 1);
-            tInd.emplace_back(3, 7, 5);
-            tInd.emplace_back(3, 6, 7);
-            tInd.emplace_back(3, 2, 6);
-            tInd.emplace_back(3, 0, 2);
-            tInd.emplace_back(3, 1, 0);
+            tInd.emplace_back(4, 1, 0);
+            tInd.emplace_back(4, 5, 1);
+            tInd.emplace_back(4, 7, 5);
+            tInd.emplace_back(4, 6, 7);
+            tInd.emplace_back(3, 1, 5);
+            tInd.emplace_back(3, 5, 7);
+            tInd.emplace_back(3, 7, 6);
+            tInd.emplace_back(3, 6, 2);
+            tInd.emplace_back(3, 2, 0);
+            tInd.emplace_back(3, 0, 1);
         }
     };
 }

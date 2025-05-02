@@ -1,3 +1,4 @@
+#pragma once
 #include <matrix.h>
 #include <twist.h>
 #include <math.h>
@@ -45,9 +46,12 @@ namespace Engine
     void getRT(_T &t, _R &r, Vector3d &tvec);
     _T inv(_T &&t);
     _T inv(_T &t);
+
+    Vector3d& norm(Vector3d &v);
     _R rpy2rot(Vector3d rpy);
     std::vector<Vector3d> to_3d(std::vector<Vector4d> &);
     std::vector<Vector3d> to_3d(std::vector<Vector4d> &&);
+    Vector3d intersectLinePlane(Vector3d &P, Vector3d &A, Vector3d &B, Vector3d &C);
     void remove_self_hidden(std::vector<Vector3d> &, std::vector<bool> &);
     void remove_inter_hidden(std::vector<Vector3d> &, std::vector<Vector3d> &, std::vector<bool> &);
 }

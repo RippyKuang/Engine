@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     Cube link2(Vector3d{0.05, 0.05, 0.05});
     Cube link3(Vector3d{0.025, 0.025, 0.15});
 
-    Camera camera(Vector3d{-0.6, -0.3, 0.2}, _R{300, 0, _w/2, 0, 300, _h/2, 0, 0, 1});
+    Camera camera(Vector3d{-0.7, -0.1, 0.2}, _R{500, 0, _w/2, 0, 500, _h/2, 0, 0, 1});
     World w(camera,_w,_h);
 
     Joint j0(base_link, link0, Vector3d{0, 0, 0.1 - 0.025}, 0, new CONTINUOUS_INFO(AXIS_Z));
@@ -35,25 +35,26 @@ int main(int argc, char *argv[])
 
     frame.show();
 
-    w.set_speed(0, M_PI / 2);
-    w.set_speed(1, M_PI / 2);
-    w.set_speed(2, M_PI / 2);
-    w.set_speed(3, M_PI / 2);
+    w.set_speed(0, M_PI / 8);
+    w.set_speed(1, M_PI / 8);
+    w.set_speed(2, M_PI / 8);
+    w.set_speed(3, M_PI / 8);
 
     while (1)
     {
         std::vector<_T> t = w.get_pose({0, 1, 2, 3});
 
-        std::vector<Engine::Point2i> frame_projs;
-        w.project_frame(frame_projs, t);
+       // std::vector<Engine::Point2i> frame_projs;
+       // w.project_frame(frame_projs, t);
 
-        std::vector<Twist> v;
-        std::vector<Twist> dv;
-        w.inverse_dynamics(v, dv);
+    //    std::vector<Twist> v;
+     //   std::vector<Twist> dv;
+   //     w.inverse_dynamics(v, dv);
 
         std::vector<Engine::pixel> projs;
         w.project(projs);
-        frame.updateData(projs, std::move(frame_projs));
+        frame.updateData(projs);
+
     }
     return 0;
 }

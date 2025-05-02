@@ -92,6 +92,7 @@ namespace Engine
     {
         std::lock_guard<std::mutex> lock(m);
         this->datas.swap(data);
+     
         if (frame_data.size() == 0)
             return;
         this->frame_datas = frame_data;

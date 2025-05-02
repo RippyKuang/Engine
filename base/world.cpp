@@ -5,7 +5,7 @@ namespace Engine
 
     void World::emplace(Cube &i, int id)
     {
-        Link *j =new Link(i);
+        Link *j = new Link(i);
         links.insert(std::pair<int, Link *>(id, j));
     }
 
@@ -150,7 +150,7 @@ namespace Engine
     void World::project(std::vector<pixel> &projs)
     {
         std::vector<Mesh> cubes;
-
+        Vector4d light_dir = {-2, -2, 1, 1};
         {
             std::lock_guard<std::mutex> lock(m);
             std::map<int, Link *>::iterator _iter = links.begin();
@@ -164,36 +164,9 @@ namespace Engine
                 _iter++;
             }
         }
-        this->raster.rasterize(cubes, projs);
-        // projs.reserve(450*cubes.size());
-        // auto iter = cubes.begin();
-
-        // while (iter != cubes.end())
-        // {
-        //     std::vector<Vector3d>& cube_in_camera = *iter;
-        //     std::vector<bool> visible(cube_in_camera.size(), true);
-        //     remove_self_hidden(cube_in_camera, visible);
-           
-        //     cam.project(cube_in_camera, pseudo_tprojs, visible, true);
-            
-        //     discrete(cube_in_camera, discreted_pw, pseudo_tprojs, visible);
-        //     auto temp_iter = cubes.begin();
-        //     visible.assign(discreted_pw.size(), true);
-        //     while (temp_iter != cubes.end())
-        //     {
-        //         if (temp_iter != iter)
-        //             remove_inter_hidden(discreted_pw, *temp_iter, visible);
-        //         temp_iter++;
-        //     }
-         
-        //     cam.project(discreted_pw, tprojs, visible);
-        //     projs.insert(projs.end(), std::make_move_iterator(tprojs.begin()),
-        //                  std::make_move_iterator(tprojs.end()));
-        //     iter++;
-        //     tprojs.clear();
-        //     pseudo_tprojs.clear();
-        //     discreted_pw.clear();
-        // }
+        Vector4d v = _T{0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1} * inv(pose[-2]) * light_dir;
+        this->raster.rasterize(cubes, projs,v);
+      
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {

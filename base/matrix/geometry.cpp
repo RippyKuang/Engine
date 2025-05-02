@@ -102,6 +102,16 @@ namespace Engine
         return isPointInTriangle(intersection, A, B, C) || isPointInTriangle(intersection, A, C, D);
     }
 
+    Vector3d& norm(Vector3d &v)
+    {
+        double norm = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+        if (norm == 0)
+            return v;
+        for (int i = 0; i < 3; i++)
+            v[i] /= norm;
+        return v;
+    }
+
     std::vector<Vector3d> to_3d(std::vector<Vector4d> &corners)
     {
         std::vector<Vector3d> _3d;
