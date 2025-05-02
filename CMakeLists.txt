@@ -14,7 +14,9 @@ target_link_libraries(engine PUBLIC visual base robot middleware)
 target_include_directories(engine PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/visualize/inc"
+                          "${PROJECT_SOURCE_DIR}/visualize/render"
                           "${PROJECT_SOURCE_DIR}/base/inc"
+                          "${PROJECT_SOURCE_DIR}/base/matrix"
                           "${PROJECT_SOURCE_DIR}/robotic/inc"
                           "${PROJECT_SOURCE_DIR}/middleware/inc"
                           ${GTK3_INCLUDE_DIRS}

@@ -7,6 +7,7 @@
 #include <functional>
 #include <type_traits>
 
+
 using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;

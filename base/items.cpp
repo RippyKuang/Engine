@@ -20,7 +20,7 @@ namespace Engine
         double y = box[1];
         double z = box[2];
         this->mass = mass;
-        this->center = Vector4d(xyz);
+    
         corners.push_back(Vector4d{+x / 2, -y / 2, +z / 2, 1});
         corners.push_back(Vector4d{+x / 2, -y / 2, -z / 2, 1});
         corners.push_back(Vector4d{+x / 2, +y / 2, +z / 2, 1});

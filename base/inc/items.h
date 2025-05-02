@@ -1,6 +1,7 @@
 #pragma once
 #include <geometry.h>
 #include <vector>
+#include <mesh.h>
 
 namespace Engine
 {
@@ -14,9 +15,9 @@ namespace Engine
     protected:
         _T init_pose;
         double mass;
-        Vector4d center;
         void transform(_T);
         std::vector<Vector4d> corners;
+        
 
     public:
         Link(std::vector<Vector4d> _corners) : corners(_corners) {};
