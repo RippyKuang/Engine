@@ -6,13 +6,14 @@
 #include <unordered_map>
 #include <functional>
 #include <type_traits>
-
+#include <raster.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
 
 #define PRE_ALLOC 450
+
 namespace Engine
 {
     class World
@@ -30,13 +31,13 @@ namespace Engine
         double drive(int id);
         void act(int id, _T t);
         void discrete(std::vector<Vector3d> &, std::vector<Vector3d> &, std::vector<Point2i> &, std::vector<bool> &);
-
+        Rasterizer raster;
         std::vector<Point2i> tprojs;
         std::vector<Point2i> pseudo_tprojs;
         std::vector<Vector3d> discreted_pw;
     public:
         std::map<int, Link *> links;
-        World(Camera &_cam) : cam(_cam)
+        World(Camera &_cam,const int w,const int h) : cam(_cam),raster(w,h)
         {
             pose.insert(std::pair<int, _T>(-1, EYE(4)));
             pose.insert(std::pair<int, _T>(-2, _cam.init_pose));
@@ -52,7 +53,7 @@ namespace Engine
 
         std::vector<_T> get_pose(std::initializer_list<int> ids);
         void project_frame(std::vector<Point2i> &, std::vector<_T> &);
-        void project(std::vector<Point2i> &);
+        void project(std::vector<pixel> &);
         void inverse_dynamics(std::vector<Twist> &, std::vector<Twist> &);
 
     

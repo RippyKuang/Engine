@@ -61,10 +61,11 @@ namespace Engine
     void GFrame::processData(cairo_t *cr)
     {
         std::lock_guard<std::mutex> lock(m);
-        cairo_set_source_rgb(cr, 0, 0, 0);
+      
         for (int i = 0; i < datas.size(); i++)
         {
-            cairo_arc(cr, w - datas[i][0], h - datas[i][1], 1, 0, 2 * G_PI);
+            cairo_set_source_rgb(cr, datas[i].color[0],datas[i].color[1], datas[i].color[2]);
+            cairo_arc(cr, w - datas[i].pos[0], h - datas[i].pos[1], 1, 0, 2 * G_PI);
             cairo_fill(cr);
         }
         if (this->frame_datas.size() != 0)
@@ -82,12 +83,12 @@ namespace Engine
                 LINE(w - frame_datas[4 * i][0], h - frame_datas[4 * i][1], w - frame_datas[4 * i + 3][0], h - frame_datas[4 * i + 3][1], cr);
             }
             cairo_stroke(cr);
-            //   this->frame_datas.clear();
+
         }
 
         cairo_destroy(cr);
     }
-    void GFrame::updateData(std::vector<Point2i> &data, std::vector<Point2i> frame_data)
+    void GFrame::updateData(std::vector<pixel> &data, std::vector<Point2i> frame_data)
     {
         std::lock_guard<std::mutex> lock(m);
         this->datas.swap(data);
@@ -96,7 +97,7 @@ namespace Engine
         this->frame_datas = frame_data;
     }
 
-    GFrame::GFrame(int argc, char *argv[])
+    GFrame::GFrame(int argc, char *argv[],int w,int h):w(w),h(h)
     {
         gtk_init(&argc, &argv);
         this->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);

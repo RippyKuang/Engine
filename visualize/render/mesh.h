@@ -1,3 +1,4 @@
+#pragma once
 #include <matrix.h>
 
 namespace Engine
@@ -12,8 +13,26 @@ namespace Engine
         std::vector<Index3i> tInd;
         Mesh(int nv, int nt) : nv(nv), nt(nt)
         {
-            vertices.resize(nv);
-            tInd.resize(nt);
+            vertices.reserve(nv);
+            tInd.reserve(nt);
+        }
+        Mesh(const Mesh &t) : nv(t.nv), nt(t.nt)
+        {
+            this->vertices = t.vertices;
+            this->tInd = t.tInd;
+        }
+        template <typename T,typename = typename std::enable_if<std::is_base_of<Mesh,T>::value>::type>
+        Mesh(T&& t) : nv(t.nv), nt(t.nt)
+        {
+            std::cout << "move" << std::endl;
+            this->vertices = std::move(t.vertices);
+            this->tInd= std::move(t.tInd);
+         
+        }
+        void _transform(_T t)
+        {
+            for (auto it = this->vertices.begin(); it != this->vertices.end(); it++)
+                *it = t * (*it);
         }
     };
 
@@ -28,7 +47,7 @@ namespace Engine
             double y = box[1];
             double z = box[2];
 
-            vertices.emplace_back(+x / 2, -y / 2, +z / 2, 1);
+            vertices.emplace_back(+x / 2, -y / 2, +z / 2, 1.0);
             vertices.emplace_back(+x / 2, -y / 2, -z / 2, 1);
             vertices.emplace_back(+x / 2, +y / 2, +z / 2, 1);
             vertices.emplace_back(+x / 2, +y / 2, -z / 2, 1);

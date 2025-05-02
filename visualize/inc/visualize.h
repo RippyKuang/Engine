@@ -28,11 +28,11 @@ namespace Engine
         cairo_surface_t *surface = NULL;
         void clear_surface(void);
         void processData(cairo_t *);
-        std::vector<Point2i> datas; 
+        std::vector<pixel> datas; 
         std::vector<Point2i> frame_datas;
         std::mutex m;
-        const int w = 1280;
-        const int h = 1024;
+        const int w;
+        const int h;
         static gboolean draw_cb(GtkWidget *, cairo_t *, gpointer);
         static gboolean time_handler(GtkWidget *);
         static gboolean configure_event_cb(GtkWidget *,
@@ -40,8 +40,8 @@ namespace Engine
                                            gpointer);
 
     public:
-        GFrame(int argc, char *argv[]);
+        GFrame(int argc, char *argv[],int w,int h);
         void show();
-        void updateData(std::vector<Point2i>& data,std::vector<Point2i> frame_data={});
+        void updateData(std::vector<pixel>& data,std::vector<Point2i> frame_data={});
     };
 }

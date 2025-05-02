@@ -75,7 +75,6 @@ namespace Engine
                 this->data[i] = *it;
         }
 
-
         void _impl_args(int index, const _Scalar &t)
         {
             this->data[index] = t;
@@ -269,4 +268,10 @@ namespace Engine
                 m[i * (_aCol + _bCol) + j] = b[i * _bCol + j - _aCol];
         return m;
     }
+
+    struct pixel
+    {
+        Vector3d color;
+        Point2i pos;
+    };
 }

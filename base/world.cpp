@@ -5,8 +5,7 @@ namespace Engine
 
     void World::emplace(Cube &i, int id)
     {
-        Link *j = (Link *)malloc(sizeof(Cube));
-        memcpy(j, &i, sizeof(Cube));
+        Link *j =new Link(i);
         links.insert(std::pair<int, Link *>(id, j));
     }
 
@@ -148,9 +147,9 @@ namespace Engine
             cam.project_all(cube_in_camera, projs);
         }
     }
-    void World::project(std::vector<Point2i> &projs)
+    void World::project(std::vector<pixel> &projs)
     {
-        std::vector<std::vector<Vector3d>> cubes;
+        std::vector<Mesh> cubes;
 
         {
             std::lock_guard<std::mutex> lock(m);
@@ -158,45 +157,49 @@ namespace Engine
 
             while (_iter != links.end())
             {
-                cubes.push_back(to_3d(getCoord(_iter->first, -2)));
+                Link it = *links.at(_iter->first);
+                it.transform(inv(pose[-2]));
+                cam.project(it);
+                cubes.push_back(it.mesh);
                 _iter++;
             }
         }
-        projs.reserve(450*cubes.size());
-        auto iter = cubes.begin();
+        this->raster.rasterize(cubes, projs);
+        // projs.reserve(450*cubes.size());
+        // auto iter = cubes.begin();
 
-        while (iter != cubes.end())
-        {
-            std::vector<Vector3d>& cube_in_camera = *iter;
-            std::vector<bool> visible(cube_in_camera.size(), true);
-            remove_self_hidden(cube_in_camera, visible);
+        // while (iter != cubes.end())
+        // {
+        //     std::vector<Vector3d>& cube_in_camera = *iter;
+        //     std::vector<bool> visible(cube_in_camera.size(), true);
+        //     remove_self_hidden(cube_in_camera, visible);
            
-            cam.project(cube_in_camera, pseudo_tprojs, visible, true);
+        //     cam.project(cube_in_camera, pseudo_tprojs, visible, true);
             
-            discrete(cube_in_camera, discreted_pw, pseudo_tprojs, visible);
-            auto temp_iter = cubes.begin();
-            visible.assign(discreted_pw.size(), true);
-            while (temp_iter != cubes.end())
-            {
-                if (temp_iter != iter)
-                    remove_inter_hidden(discreted_pw, *temp_iter, visible);
-                temp_iter++;
-            }
+        //     discrete(cube_in_camera, discreted_pw, pseudo_tprojs, visible);
+        //     auto temp_iter = cubes.begin();
+        //     visible.assign(discreted_pw.size(), true);
+        //     while (temp_iter != cubes.end())
+        //     {
+        //         if (temp_iter != iter)
+        //             remove_inter_hidden(discreted_pw, *temp_iter, visible);
+        //         temp_iter++;
+        //     }
          
-            cam.project(discreted_pw, tprojs, visible);
-            projs.insert(projs.end(), std::make_move_iterator(tprojs.begin()),
-                         std::make_move_iterator(tprojs.end()));
-            iter++;
-            tprojs.clear();
-            pseudo_tprojs.clear();
-            discreted_pw.clear();
-        }
+        //     cam.project(discreted_pw, tprojs, visible);
+        //     projs.insert(projs.end(), std::make_move_iterator(tprojs.begin()),
+        //                  std::make_move_iterator(tprojs.end()));
+        //     iter++;
+        //     tprojs.clear();
+        //     pseudo_tprojs.clear();
+        //     discreted_pw.clear();
+        // }
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {
         Link it = *links.at(id);
         it.transform(inv(pose[base]));
-        return std::move(it.corners);
+        return std::move(it.get_corners());
     }
 
     void World::parse_robot(std::initializer_list<Joint> jo)
