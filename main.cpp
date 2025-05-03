@@ -13,6 +13,7 @@ using namespace Engine;
 
 int main(int argc, char *argv[])
 {
+  //  std::cout<<std::thread::hardware_concurrency()<<std::endl;
     const int _w = 1280;
     const int _h = 1024;
     Engine::GFrame frame(argc, argv, _w, _h);
@@ -35,10 +36,10 @@ int main(int argc, char *argv[])
 
     frame.show();
 
-    w.set_speed(0, M_PI / 8);
-    w.set_speed(1, M_PI / 8);
-    w.set_speed(2, M_PI / 8);
-    w.set_speed(3, M_PI / 8);
+    w.set_speed(0, M_PI/6 );
+    w.set_speed(1, M_PI/6 );
+    w.set_speed(2, M_PI/6 );
+    w.set_speed(3, M_PI/6 );
 
     while (1)
     {
@@ -52,8 +53,9 @@ int main(int argc, char *argv[])
    //     w.inverse_dynamics(v, dv);
 
         std::vector<Engine::pixel> projs;
-        w.project(projs);
-        frame.updateData(projs);
+        auto promise = w.project();
+        usleep(1000);
+        frame.updateFuture(std::move(promise));
 
     }
     return 0;

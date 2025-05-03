@@ -4,6 +4,7 @@
 #include <functional>
 #include <matrix.h>
 #include <mutex>
+#include <future>
 
 namespace Engine
 {
@@ -30,6 +31,7 @@ namespace Engine
         void processData(cairo_t *);
         std::vector<pixel> datas; 
         std::vector<Point2i> frame_datas;
+        std::future<std::vector<pixel>> fut;
         std::mutex m;
         const int w;
         const int h;
@@ -43,5 +45,6 @@ namespace Engine
         GFrame(int argc, char *argv[],int w,int h);
         void show();
         void updateData(std::vector<pixel>& data,std::vector<Point2i> frame_data={});
+        void updateFuture(std::future<std::vector<pixel>> &&fut);
     };
 }

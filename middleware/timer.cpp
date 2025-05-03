@@ -30,7 +30,7 @@ namespace Engine
                     if (events[te.ref].valid && events[te.ref].period.count() > 0)
                     {
                         te.next += events[te.ref].period;
-                        time_events.insert(te);
+                        time_events.emplace_back(te);
                     }
                     else
                     {
@@ -83,7 +83,7 @@ namespace Engine
             Event e(id, when, duration(dur), std::move(handler));
             events[id] = std::move(e);
         }
-        time_events.insert(Time_event{when, id});
+        time_events.emplace_back(Time_event{when, id});
         lock.unlock();
         cond.notify_one();
         return id;

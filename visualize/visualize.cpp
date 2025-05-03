@@ -61,7 +61,11 @@ namespace Engine
     void GFrame::processData(cairo_t *cr)
     {
         std::lock_guard<std::mutex> lock(m);
-      
+   
+        if (this->fut.valid())
+        {
+            this->datas = std::move(this->fut.get());
+        }
         for (int i = 0; i < datas.size(); i++)
         {
             cairo_set_source_rgb(cr, datas[i].color[0],datas[i].color[1], datas[i].color[2]);
@@ -97,6 +101,12 @@ namespace Engine
             return;
         this->frame_datas = frame_data;
     }
+
+    void GFrame::updateFuture(std::future<std::vector<pixel>> &&fut)
+        {
+            std::lock_guard<std::mutex> lock(m);
+            this->fut = std::move(fut); 
+        }
 
     GFrame::GFrame(int argc, char *argv[],int w,int h):w(w),h(h)
     {

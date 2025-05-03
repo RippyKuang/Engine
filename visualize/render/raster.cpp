@@ -3,64 +3,108 @@
 namespace Engine
 {
 
-    void Rasterizer::rasterize(std::vector<Mesh> &meshes, std::vector<pixel> &pixels, Vector3d light_dir)
+    void intersectLinePlane(d3 &P, d3 &A, d3 &B, d3 &C, d3 &ret, d3 &N)
     {
 
-        std::fill(this->z_buffer, this->z_buffer + w * h, 9999.0);
+        double denom = N[0] * P[0] + N[1] * P[1] + N[2] * P[2];
+        double t = (N[0] * A[0] + N[1] * A[1] + N[2] * A[2]) / denom;
+        ret[0] = P[0] * t;
+        ret[1] = P[1] * t;
+        ret[2] = P[2] * t;
+    }
+
+    std::vector<pixel> Rasterizer::_rasterize(std::vector<Mesh> &meshes, Vector3d light_dir)
+    {
+        std::vector<pixel> pixels;
+        int buffer_id = this->alloc_z_buffer();
+        std::fill(this->z_buffer[buffer_id], this->z_buffer[buffer_id] + w * h, std::numeric_limits<float>::infinity());
         for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
         {
 
             for (int i = 0; i < iter->nt; i++)
             {
+
                 auto t = iter->tInd[i];
-                Vector3d _p0 = iter->vertices[t[0]];
-                Vector3d _p1 = iter->vertices[t[1]];
-                Vector3d _p2 = iter->vertices[t[2]];
-                Vector3d p0 = {_p0[0] / _p0[2], _p0[1] / _p0[2], _p0[2]};
-                Vector3d p1 = {_p1[0] / _p1[2], _p1[1] / _p1[2], _p1[2]};
-                Vector3d p2 = {_p2[0] / _p2[2], _p2[1] / _p2[2], _p2[2]};
+                d3 _p0 = {iter->vertices[t[0]][0], iter->vertices[t[0]][1], iter->vertices[t[0]][2]};
+                d3 _p1 = {iter->vertices[t[1]][0], iter->vertices[t[1]][1], iter->vertices[t[1]][2]};
+                d3 _p2 = {iter->vertices[t[2]][0], iter->vertices[t[2]][1], iter->vertices[t[2]][2]};
+
+                d2 p0 = {_p0[0] / _p0[2], _p0[1] / _p0[2]};
+                d2 p1 = {_p1[0] / _p1[2], _p1[1] / _p1[2]};
+                d2 p2 = {_p2[0] / _p2[2], _p2[1] / _p2[2]};
+
+                d3 __p0 = {(_p0[0] - _p0[2] * 640.0) / 500.0, (_p0[1] - _p0[2] * 512.0) / 500.0, _p0[2]};
+                d3 __p1 = {(_p1[0] - _p1[2] * 640.0) / 500.0, (_p1[1] - _p1[2] * 512.0) / 500.0, _p1[2]};
+                d3 __p2 = {(_p2[0] - _p2[2] * 640.0) / 500.0, (_p2[1] - _p2[2] * 512.0) / 500.0, _p2[2]};
+
+                double x11 = __p1[0] - __p0[0];
+                double x12 = __p1[1] - __p0[1];
+                double x13 = __p1[2] - __p0[2];
+                double x21 = __p2[0] - __p0[0];
+                double x22 = __p2[1] - __p0[1];
+                double x23 = __p2[2] - __p0[2];
+
+                d3 N = {x12 * x23 - x13 * x22,
+                        x13 * x21 - x11 * x23,
+                        x11 * x22 - x12 * x21};
 
                 int min_x = floor(std::min({p0[0], p1[0], p2[0]}));
                 int max_x = ceil(std::max({p0[0], p1[0], p2[0]}));
                 int min_y = floor(std::min({p0[1], p1[1], p2[1]}));
                 int max_y = ceil(std::max({p0[1], p1[1], p2[1]}));
 
+                double _a = f(p0[0], p0[1], p1, p2);
+                double _b = f(p1[0], p1[1], p2, p0);
+                double _c = f(p2[0], p2[1], p0, p1);
+
+                double alpha = f(min_x, min_y , p1, p2) / _a;
+                double beta = f(min_x, min_y , p2, p0) / _b;
+                double gamma = f(min_x, min_y , p0, p1) / _c;
+                double delta_xa = (p1[1] - p2[1]) / _a;
+                double delta_ya = (p2[0] - p1[0]) / _a;
+                double delta_xb = (p2[1] - p0[1]) / _b;
+                double delta_yb = (p0[0] - p2[0]) / _b;
+                double delta_xc = (p0[1] - p1[1]) / _c;
+                double delta_yc = (p1[0] - p0[0]) / _c;
+
                 for (int x = min_x; x <= max_x; x++)
                 {
-                    for (int y = min_y; y <= max_y; y++)
-                    {
-
-                        double aplha = f(x, y, p1, p2) / f(p0[0], p0[1], p1, p2);
-                        double beta = f(x, y, p2, p0) / f(p1[0], p1[1], p2, p0);
-                        double gamma = f(x, y, p0, p1) / f(p2[0], p2[1], p0, p1);
-                        if (aplha >= 0 && beta >= 0 && gamma >= 0)
-                        {
-                            double z = (p0[2] * aplha + p1[2] * beta + p2[2] * gamma);
-
-                            if (z < this->z_buffer[x + y * w])
-                            {
-                                this->z_buffer[x + y * w] = z;
-                                Vector3d ray = Vector3d((x - 640.0) / 500, (y - 512.0) / 500, 1);
-                                Vector3d __p0 = {(_p0[0] - _p0[2] * 640.0) / 500.0, (_p0[1] - _p0[2] * 512.0) / 500.0, p0[2]};
-                                Vector3d __p1 = {(_p1[0] - _p1[2] * 640.0) / 500.0, (_p1[1] - _p1[2] * 512.0) / 500.0, p1[2]};
-                                Vector3d __p2 = {(_p2[0] - _p2[2] * 640.0) / 500.0, (_p2[1] - _p2[2] * 512.0) / 500.0, p2[2]};
-                                Vector3d intersect = intersectLinePlane(ray, __p0, __p1, __p2);
-                                pixels.push_back({Blinn_Phong(light_dir - intersect, ray, __p0, __p1, __p2), Point2i{x, y}});
+                    double alpha_row = alpha + (x - min_x) * delta_xa;
+                    double beta_row = beta + (x - min_x) * delta_xb;
+                    double gamma_row = gamma + (x - min_x) * delta_xc;
+                
+                    for (int y = min_y; y <= max_y; y++) {
+                        double alpha_xy = alpha_row + (y - min_y) * delta_ya;
+                        double beta_xy = beta_row + (y - min_y) * delta_yb;
+                        double gamma_xy = gamma_row + (y - min_y) * delta_yc;
+                
+                        if (alpha_xy >= -1e-6 && beta_xy >= -1e-6 && gamma_xy >= -1e-6) {
+                            double z = (_p0[2] * alpha_xy + _p1[2] * beta_xy + _p2[2] * gamma_xy);
+                            if (z < this->z_buffer[buffer_id][x + y * w] - 1e-5) {
+                                this->z_buffer[buffer_id][x + y * w] = z;
+                                d3 ray = {(x - 640.0) / 500, (y - 512.0) / 500, 1};
+                                d3 ret;
+                                intersectLinePlane(ray, __p0, __p1, __p2, ret, N);
+                                pixels.emplace_back(Blinn_Phong(light_dir, ret, ray, N), Point2i{x, y});
                             }
                         }
                     }
                 }
             }
         }
+        this->release_z_buffer(buffer_id);
+        return std::move(pixels);
     }
-    Vector3d Rasterizer::Blinn_Phong(Vector3d light_dir, Vector3d eye_dir, Vector3d &p0, Vector3d &p1, Vector3d &p2)
-    {
-        Vector3d h = light_dir + eye_dir;
-        Vector3d normal = cross(p2 - p1, p0 - p1);
 
-        double nh = std::max(std::pow(dot(norm(normal), norm(h)), 10), 0.0);
-        double nl = std::max(dot(normal, norm(light_dir)), 0.0);
-        double intensity = std::min(0.7 * nl + 0.2 * nh, 1.0);
+    Vector3d Rasterizer::Blinn_Phong(Vector3d &light_dir, d3 &intersect, d3 &eye_dir, d3 &N)
+    {
+        d3 h = {light_dir[0] - intersect[0] + eye_dir[0], light_dir[1] - intersect[1] + eye_dir[1], light_dir[2] - intersect[2] + eye_dir[2]};
+        double norm_h = std::sqrt(h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
+        double norm_N = std::sqrt(N[0] * N[0] + N[1] * N[1] + N[2] * N[2]);
+        double norm_L = std::sqrt(light_dir[0] * light_dir[0] + light_dir[1] * light_dir[1] + light_dir[2] * light_dir[2]);
+        double nh = std::max(std::pow((N[0] * h[0] + N[1] * h[1] + N[2] * h[2]) / (norm_h * norm_N), 10), 0.0);
+        double nl = std::max((N[0] * light_dir[0] + N[1] * light_dir[1] + N[2] * light_dir[2]) / (norm_N * norm_L), 0.0);
+        double intensity = std::min(0.7 * nl + 0.3 * nh, 1.0);
 
         return Vector3d{intensity, intensity, intensity};
     }

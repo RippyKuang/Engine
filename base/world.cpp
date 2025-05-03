@@ -147,7 +147,7 @@ namespace Engine
             cam.project_all(cube_in_camera, projs);
         }
     }
-    void World::project(std::vector<pixel> &projs)
+    std::future<std::vector<pixel>> World::project()
     {
         std::vector<Mesh> cubes;
         Vector4d light_dir = {-2, -2, 1, 1};
@@ -165,7 +165,7 @@ namespace Engine
             }
         }
         Vector4d v = _T{0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1} * inv(pose[-2]) * light_dir;
-        this->raster.rasterize(cubes, projs,v);
+        return this->raster.parallel_rasterize(cubes,v);
       
     }
     std::vector<Vector4d> World::getCoord(int id, int base)

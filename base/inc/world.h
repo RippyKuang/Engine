@@ -53,7 +53,7 @@ namespace Engine
 
         std::vector<_T> get_pose(std::initializer_list<int> ids);
         void project_frame(std::vector<Point2i> &, std::vector<_T> &);
-        void project(std::vector<pixel> &);
+        std::future<std::vector<pixel>> project();
         void inverse_dynamics(std::vector<Twist> &, std::vector<Twist> &);
 
     
