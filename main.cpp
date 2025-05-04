@@ -46,16 +46,16 @@ int main(int argc, char *argv[])
        
         std::vector<_T> t = w.get_pose({0, 1, 2, 3});
 
-       // std::vector<Engine::Point2i> frame_projs;
-       // w.project_frame(frame_projs, t);
+       std::vector<Engine::Point2i> frame_projs;
+       w.project_frame(frame_projs, t);
 
-    //    std::vector<Twist> v;
-     //   std::vector<Twist> dv;
-   //     w.inverse_dynamics(v, dv);
+       std::vector<Twist> v;
+       std::vector<Twist> dv;
+       w.inverse_dynamics(v, dv);
 
         std::vector<Engine::pixel> projs;
         auto promise = w.project();
-        usleep(1000);
+        usleep(5000);
         frame.updateFuture(std::move(promise));
 
     }

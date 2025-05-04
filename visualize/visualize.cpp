@@ -64,7 +64,10 @@ namespace Engine
    
         if (this->fut.valid())
         {
+            auto x= std::chrono::system_clock::now().time_since_epoch().count();
             this->datas = std::move(this->fut.get());
+            auto y= std::chrono::system_clock::now().time_since_epoch().count();
+        //    std::cout << "time: " << (y - x) / 1e9 << std::endl;
         }
         for (int i = 0; i < datas.size(); i++)
         {

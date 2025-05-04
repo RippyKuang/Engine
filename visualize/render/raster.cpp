@@ -17,7 +17,7 @@ namespace Engine
     {
         std::vector<pixel> pixels;
         int buffer_id = this->alloc_z_buffer();
-        std::fill(this->z_buffer[buffer_id], this->z_buffer[buffer_id] + w * h, std::numeric_limits<float>::infinity());
+       
         for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
         {
 
@@ -72,15 +72,17 @@ namespace Engine
 
                 for (int x = min_x; x <= max_x; x++)
                 {
-                    double alpha_row = alpha + (x - min_x) * delta_xa;
-                    double beta_row = beta + (x - min_x) * delta_xb;
-                    double gamma_row = gamma + (x - min_x) * delta_xc;
+                    int x_ = x - min_x;
+                    double alpha_row = alpha + x_ * delta_xa;
+                    double beta_row = beta + x_ * delta_xb;
+                    double gamma_row = gamma + x_ * delta_xc;
 
                     for (int y = min_y; y <= max_y; y++)
                     {
-                        double alpha_xy = alpha_row + (y - min_y) * delta_ya;
-                        double beta_xy = beta_row + (y - min_y) * delta_yb;
-                        double gamma_xy = gamma_row + (y - min_y) * delta_yc;
+                        int y_ = y - min_y;
+                        double alpha_xy = alpha_row + y_ * delta_ya;
+                        double beta_xy = beta_row + y_ * delta_yb;
+                        double gamma_xy = gamma_row + y_ * delta_yc;
 
                         if (alpha_xy >= -1e-6 && beta_xy >= -1e-6 && gamma_xy >= -1e-6)
                         {

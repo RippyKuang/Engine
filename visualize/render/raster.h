@@ -28,13 +28,19 @@ namespace Engine
             {
                 float *z = (float *)malloc(w * h * sizeof(float));
                 z_buffer.push_back(z);
+                std::cout <<z_buffer.size() << std::endl;
                 return z_buffer.size() - 1;
             }
         }
         void release_z_buffer(int id)
         {
-            std::lock_guard<std::mutex> lock(m);
-            free_ids.push(id);
+            pool.enqueue([this, id]()
+            {
+                std::fill(this->z_buffer[id], this->z_buffer[id] + w * h, std::numeric_limits<float>::infinity());
+                std::lock_guard<std::mutex> lock(this->m);
+                free_ids.push(id);
+            });
+          
         }
 
     public:
