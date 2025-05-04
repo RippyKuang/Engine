@@ -7,6 +7,7 @@ namespace Engine
     using d2 = double[2];
     using d3 = double[3];
 
+
     class Rasterizer
     {
     private:
@@ -50,7 +51,7 @@ namespace Engine
         }
 
         std::vector<pixel> _rasterize(std::vector<Mesh> &meshes, Vector3d light_dir);
-        Vector3d shading(Vector3d dir, Vector3d &p0, Vector3d &p1, Vector3d &p2);
+      
         Vector3d Blinn_Phong(Vector3d& light_dir, d3& intersect,d3& eye_dir, d3 &N);
 
         std::future<std::vector<pixel>> parallel_rasterize(std::vector<Mesh> &meshes, Vector3d light_dir)

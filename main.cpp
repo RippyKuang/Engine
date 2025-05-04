@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+       
         std::vector<_T> t = w.get_pose({0, 1, 2, 3});
 
        // std::vector<Engine::Point2i> frame_projs;

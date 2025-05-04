@@ -3,7 +3,7 @@
 namespace Engine
 {
 
-    void intersectLinePlane(d3 &P, d3 &A, d3 &B, d3 &C, d3 &ret, d3 &N)
+    inline void intersectLinePlane(d3 &P, d3 &A, d3 &ret, d3 &N)
     {
 
         double denom = N[0] * P[0] + N[1] * P[1] + N[2] * P[2];
@@ -25,9 +25,12 @@ namespace Engine
             {
 
                 auto t = iter->tInd[i];
-                d3 _p0 = {iter->vertices[t[0]][0], iter->vertices[t[0]][1], iter->vertices[t[0]][2]};
-                d3 _p1 = {iter->vertices[t[1]][0], iter->vertices[t[1]][1], iter->vertices[t[1]][2]};
-                d3 _p2 = {iter->vertices[t[2]][0], iter->vertices[t[2]][1], iter->vertices[t[2]][2]};
+                Vector4d &v1 = iter->vertices[t[0]];
+                Vector4d &v2 = iter->vertices[t[1]];
+                Vector4d &v3 = iter->vertices[t[2]];
+                d3 _p0 = {v1[0], v1[1], v1[2]};
+                d3 _p1 = {v2[0], v2[1], v2[2]};
+                d3 _p2 = {v3[0], v3[1], v3[2]};
 
                 d2 p0 = {_p0[0] / _p0[2], _p0[1] / _p0[2]};
                 d2 p1 = {_p1[0] / _p1[2], _p1[1] / _p1[2]};
@@ -57,9 +60,9 @@ namespace Engine
                 double _b = f(p1[0], p1[1], p2, p0);
                 double _c = f(p2[0], p2[1], p0, p1);
 
-                double alpha = f(min_x, min_y , p1, p2) / _a;
-                double beta = f(min_x, min_y , p2, p0) / _b;
-                double gamma = f(min_x, min_y , p0, p1) / _c;
+                double alpha = f(min_x, min_y, p1, p2) / _a;
+                double beta = f(min_x, min_y, p2, p0) / _b;
+                double gamma = f(min_x, min_y, p0, p1) / _c;
                 double delta_xa = (p1[1] - p2[1]) / _a;
                 double delta_ya = (p2[0] - p1[0]) / _a;
                 double delta_xb = (p2[1] - p0[1]) / _b;
@@ -72,20 +75,24 @@ namespace Engine
                     double alpha_row = alpha + (x - min_x) * delta_xa;
                     double beta_row = beta + (x - min_x) * delta_xb;
                     double gamma_row = gamma + (x - min_x) * delta_xc;
-                
-                    for (int y = min_y; y <= max_y; y++) {
+
+                    for (int y = min_y; y <= max_y; y++)
+                    {
                         double alpha_xy = alpha_row + (y - min_y) * delta_ya;
                         double beta_xy = beta_row + (y - min_y) * delta_yb;
                         double gamma_xy = gamma_row + (y - min_y) * delta_yc;
-                
-                        if (alpha_xy >= -1e-6 && beta_xy >= -1e-6 && gamma_xy >= -1e-6) {
+
+                        if (alpha_xy >= -1e-6 && beta_xy >= -1e-6 && gamma_xy >= -1e-6)
+                        {
                             double z = (_p0[2] * alpha_xy + _p1[2] * beta_xy + _p2[2] * gamma_xy);
-                            if (z < this->z_buffer[buffer_id][x + y * w] - 1e-5) {
-                                this->z_buffer[buffer_id][x + y * w] = z;
+                            float &z_val = this->z_buffer[buffer_id][x + y * w];
+                            if (z < z_val - 1e-5)
+                            {
+                                z_val = z;
                                 d3 ray = {(x - 640.0) / 500, (y - 512.0) / 500, 1};
                                 d3 ret;
-                                intersectLinePlane(ray, __p0, __p1, __p2, ret, N);
-                                pixels.emplace_back(Blinn_Phong(light_dir, ret, ray, N), Point2i{x, y});
+                                intersectLinePlane(ray, __p0, ret, N);
+                                pixels.emplace_back(pixel{Blinn_Phong(light_dir, ret, ray, N), Point2i{x, y}});
                             }
                         }
                     }
@@ -96,7 +103,7 @@ namespace Engine
         return std::move(pixels);
     }
 
-    Vector3d Rasterizer::Blinn_Phong(Vector3d &light_dir, d3 &intersect, d3 &eye_dir, d3 &N)
+    inline Vector3d Rasterizer::Blinn_Phong(Vector3d &light_dir, d3 &intersect, d3 &eye_dir, d3 &N)
     {
         d3 h = {light_dir[0] - intersect[0] + eye_dir[0], light_dir[1] - intersect[1] + eye_dir[1], light_dir[2] - intersect[2] + eye_dir[2]};
         double norm_h = std::sqrt(h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
@@ -109,13 +116,4 @@ namespace Engine
         return Vector3d{intensity, intensity, intensity};
     }
 
-    Vector3d Rasterizer::shading(Vector3d dir, Vector3d &p0, Vector3d &p1, Vector3d &p2)
-    {
-
-        Vector3d normal = cross(p1 - p0, p2 - p1);
-        double intensity = dot(norm(normal), norm(dir));
-        if (intensity < 0)
-            intensity = 0;
-        return Vector3d{intensity, intensity, intensity};
-    }
 }
