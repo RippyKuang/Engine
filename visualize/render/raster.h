@@ -28,7 +28,7 @@ namespace Engine
             {
                 float *z = (float *)malloc(w * h * sizeof(float));
                 z_buffer.push_back(z);
-                std::cout <<z_buffer.size() << std::endl;
+                std::cout <<"z_buffer size: "<<z_buffer.size() << std::endl;
                 return z_buffer.size() - 1;
             }
         }
