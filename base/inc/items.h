@@ -8,13 +8,11 @@ namespace Engine
     class Link
     {
         friend class World;
-
-        friend class Joint;
+        friend class Part;
 
     protected:
         double mass;
-
-        void mesh_transform(_T);
+        std::string name;
         std::vector<Vector4d> corners;
         Mesh mesh;
 
@@ -31,6 +29,8 @@ namespace Engine
             this->mass = t.mass;
         };
         void transform(_T);
+        void set_name(std::string name);
+        std::string get_name() { return this->name; }
         std::vector<Vector4d> &get_corners();
         friend std::ostream &operator<<(std::ostream &output,
                                         const Link &link)
@@ -39,6 +39,7 @@ namespace Engine
                 output << corner.T();
             return output;
         }
+
     };
 
     class Cube : public Link

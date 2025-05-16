@@ -1,169 +1,82 @@
 #pragma once
+#include <joint_type.h>
 #include <items.h>
 #include <functional>
 #include <twist.h>
 #include <map>
+#include <timer.h>
 
 namespace Engine
 {
-    class Joint;
-    class Joint_node;
 
-    enum JOINT_TYPE
+    class Part
     {
-        REVOLUTE,
-        CONTINUOUS,
-        FIXED,
-        PRISMATIC
-    };
-
-    typedef struct _INFO
-    {
-        JOINT_TYPE type = FIXED;
-        Vector3d axis;
-        double speed = 0;
-        double pos = 0;
-        double acc = 0;
-        _INFO(double p = 0, Vector3d axis = {0, 0, 0}) : pos(p), axis(axis)
-        {
-        }
-        virtual Twist get_twist()
-        {
-            return Twist();
-        }
-        virtual Twist get_dtwist()
-        {
-            return Twist(Vector3d(), axis * acc);
-        }
-    } INFO;
-    typedef INFO FIXED_INFO;
-    typedef struct _PRISMATIC_INFO : INFO
-    {
-
-        _PRISMATIC_INFO(Vector3d _axis, double pos = 0) : INFO(pos, _axis)
-        {
-            type = PRISMATIC;
-        }
-        Twist get_twist() override
-        {
-            return Twist(Vector3d(), axis * speed);
-        }
-        Twist get_dtwist() override
-        {
-            return Twist(Vector3d(), axis * acc);
-        }
-
-    } PRISMATIC_INFO;
-
-    typedef struct _CONTINUOUS_INFO : INFO
-    {
-
-        _CONTINUOUS_INFO(Vector3d _axis, double pos = 0) : INFO(pos, _axis)
-        {
-            type = CONTINUOUS;
-        }
-        virtual Twist get_twist() override
-        {
-            return Twist(axis * speed, Vector3d());
-        }
-        Twist get_dtwist() override
-        {
-            return Twist(axis * acc, Vector3d());
-        }
-    } CONTINUOUS_INFO;
-
-    typedef struct _REVOLUTE_INFO : _CONTINUOUS_INFO
-    {
-
-        double max_rad;
-        double min_rad;
-        _REVOLUTE_INFO(Vector3d _axis, double max, double min, double pos = 0) : CONTINUOUS_INFO(_axis, pos),
-                                                                                 max_rad(max), min_rad(min)
-        {
-            type = REVOLUTE;
-        }
-    } REVOLUTE_INFO;
-
-    class Joint_node
-    {
-        friend class Joint;
-
-    private:
-        int parent_link_id;
-        _T trans;
-        INFO *info;
-        std::vector<Joint_node *> childs;
-        std::vector<int> childs_link_id;
-        void transform_origin(_T&,_T&);
-        void _impl_ID(std::vector<Twist> &v, std::vector<Twist> &dv, _T &base, Twist& last_t, Twist& last_dt);
-
-    protected:
-        void act(_T& , _T& , std::map<int, Link *> &, std::function<void(int, _T)>);
-
-    public:
-        int joint_id;
-        Joint_node()
-        {
-            joint_id = -1;
-            parent_link_id = -1;
-            trans = getTransformMat(EYE(3), Vector3d{0, 0, 0});
-            info = new FIXED_INFO(0, Vector3d{0, 0, 1});
-            info->acc = -9.8066;
-        }
-        Joint_node(int _id, Vector3d _origin, INFO *_info) : joint_id(_id), info(_info)
-        {
-            trans = getTransformMat(EYE(3), _origin);
-        }
-        Joint_node *add_child(const Joint *);
-        void append_child_link_id(int);
-        void set_parent_link_id(int);
-        int get_parent_link_id();
-        Joint_node *find(int);
-        Twist get_twist();
-        Joint_node *insert(int, const Joint *);
-        const _T&  get_pose() const;
-        INFO *get_info() const;
-
-        void InvDynamics_forward(std::vector<Twist> &v, std::vector<Twist> &dv);
-        void Jacobian(std::vector<Twist> &v)
-        {
-            if (this->parent_link_id != -1)
-            {
-                v.push_back(this->get_twist());
-            }
-
-            if (this->childs.size() == 0)
-                return;
-            else
-                this->childs[0]->Jacobian(v);
-        }
-    };
-
-    class Joint
-    {
+        friend class Robot;
         friend class World;
-        friend class Joint_node;
+        friend class Joint;
 
     protected:
         Cube *parent_link;
+        Cube *child_link;
         Vector3d origin;
-        INFO *info;
+        BaseJoint *type;
         int id;
-        std::vector<Cube *> child_link;
 
     public:
-        Joint(Cube &_pi, Vector3d _origin, int _id, INFO *_type) : parent_link(&_pi), origin(_origin),
-                                                                   id(_id), info(_type)
-        {
-        }
-        Joint(Cube &_pi, Cube &_ci, Vector3d _origin, int _id, INFO *_type) : parent_link(&_pi), origin(_origin),
-                                                                              id(_id), info(_type)
+        Part(Cube &_pi, Cube &_ci, Vector3d _origin, BaseJoint *_type) : parent_link(&_pi), origin(_origin),
+                                                                         type(_type)
         {
             this->add_child_link(_ci);
         }
         void add_child_link(Cube &);
-
-        static double forward(std::map<int, Link *> &, Joint_node *tgt, double inc, std::function<void(int, _T)>);
     };
 
-}
+    struct Joint
+    {
+        BaseJoint *jtype;
+        M66 parent2joint;
+        Joint(const Part &part)
+        {
+            this->jtype = part.type;
+            this->parent2joint = xlt(part.origin);
+        }
+    };
+
+    class Robot
+    {
+        friend class World;
+
+    private:
+        std::vector<int> p;
+        std::vector<int> s;
+        std::vector<int> lambda;
+        std::vector<Joint *> jo;
+        Timer timer;
+
+    protected:
+        std::vector<Link *> bo;
+
+    public:
+        Robot(std::vector<int> &p,
+              std::vector<int> &s,
+              std::vector<Joint *> &jo,
+              std::vector<Link *> &bo)
+        {
+            this->p = std::move(p);
+            this->s = std::move(s);
+            this->jo = std::move(jo);
+            this->bo = std::move(bo);
+            for (int i = 0; i < this->p.size(); i++)
+            {
+                this->lambda.emplace_back(std::min(this->p[i], this->s[i]));
+            }
+            timer.add([this]
+                      {for(int i = 0; i < this->jo.size(); i++)
+                        this->jo[i]->jtype->step(1*1e-3); }, 1 _ms);
+        }
+        void FK(std::vector<_T> &T) const;
+
+        void summary() const;
+    };
+
+};

@@ -13,6 +13,13 @@ namespace Engine
         return catRow(catCol(r, _R()), catCol(hat(p) * r, r));
     }
 
+    inline _T inv_ad(ad_se3 x)
+    {
+        _R r{x[0], x[1], x[2], x[6], x[7], x[8], x[12], x[13], x[14]};
+        _R pxr{x[18], x[19], x[20], x[24], x[25], x[26], x[30], x[31], x[32]};
+        return catRow(catCol(r, vee(pxr*r.T())), catCol(Vector3d().T(), EYE(1)));
+    }
+
     class Twist : public Matrix<double, 6, 1>
     {
     public:

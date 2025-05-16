@@ -7,6 +7,9 @@
 #include <vector>
 
 #define EYE(x) Engine::eye<double, x>()
+#define AXIS_X Vector3d{1, 0, 0}
+#define AXIS_Y Vector3d{0, 1, 0}
+#define AXIS_Z Vector3d{0, 0, 1}
 
 namespace Engine
 {
@@ -225,6 +228,15 @@ namespace Engine
         hat_m[6] = (-1) * m[1];
         hat_m[7] = m[0];
         return hat_m;
+    }
+    template <typename T>
+    Matrix<T, 3, 1> vee(const Matrix<T, 3, 3> &m)
+    {
+        Matrix<T, 3, 1> vee_m;
+        vee_m[0] = m[7];
+        vee_m[1] = m[2];
+        vee_m[2] = m[3];
+        return vee_m;
     }
 
     template <typename T>

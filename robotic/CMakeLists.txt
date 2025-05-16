@@ -5,4 +5,4 @@ include_directories("${PROJECT_BINARY_DIR}"
 					"${PROJECT_SOURCE_DIR}/middleware/inc"
 					"${PROJECT_SOURCE_DIR}/visualize/render"
 		            )
-add_library(robot STATIC robot.cpp trajectory.cpp)
+add_library(robot STATIC robot.cpp trajectory.cpp )

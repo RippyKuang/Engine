@@ -7,9 +7,11 @@ namespace Engine
         this->mesh._transform(t);
     }
 
-    void Link::mesh_transform(_T t)
+
+
+    void Link::set_name(std::string name)
     {
-        this->mesh._transform(t);
+        this->name = name;
     }
 
     std::vector<Vector4d>& Link::get_corners()
@@ -23,8 +25,6 @@ namespace Engine
         double y = box[1];
         double z = box[2];
         this->mass = mass;
-
-
 
         _T init_pose = getTransformMat(rpy2rot(rpy), xyz);
         transform(init_pose);

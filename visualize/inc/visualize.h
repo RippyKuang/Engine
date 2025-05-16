@@ -45,6 +45,6 @@ namespace Engine
         GFrame(int argc, char *argv[],int w,int h);
         void show();
         void updateData(std::vector<pixel>& data,std::vector<Point2i> frame_data={});
-        void updateFuture(std::future<std::vector<pixel>> &&fut);
+        void updateFuture(std::future<std::vector<pixel>> &&fut,std::vector<Point2i> frame_data={});
     };
 }

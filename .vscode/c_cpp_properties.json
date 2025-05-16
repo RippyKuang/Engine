@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "/usr/include/**",
                 "/usr/lib/x86_64-linux-gnu/glib-2.0/**",
-                "${workspaceFolder}/middleware/inc"
+                "${workspaceFolder}/middleware/inc",
+                "${workspaceFolder}/robotic/inc"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

@@ -1,12 +1,12 @@
 #include <world.h>
+#include <robot.h>
 
 namespace Engine
 {
 
     void World::emplace(Cube &i, int id)
     {
-        Link *j = new Link(i);
-        links.insert(std::pair<int, Link *>(id, j));
+        links.insert(std::pair<int, Link *>(id, &i));
     }
 
     void World::act(int id, _T t)
@@ -14,125 +14,6 @@ namespace Engine
         (*links.at(id)).transform(std::move(t));
     }
 
-    double World::drive(int id)
-    {
-        std::lock_guard<std::mutex> lock(m);
-        Joint_node *tgt = graph.find(id);
-        INFO *info = tgt->get_info();
-
-        info->speed += info->acc * 1e-3;
-        if (info->speed == 0)
-        {
-            return 0;
-        }
-        double inc = info->speed * 1e-3;
-
-        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T))&World::act, this, _1, _2);
-
-        if (info->type == FIXED)
-            throw "Driving a fixed joint!";
-        if (info->type == REVOLUTE)
-        {
-            REVOLUTE_INFO *pinfo = static_cast<REVOLUTE_INFO *>(info);
-            if ((pinfo->pos + inc >= pinfo->min_rad) && (pinfo->pos + inc <= pinfo->max_rad))
-                return Joint::forward(links, tgt, inc, act_func);
-            else
-                return _FALSE;
-        }
-        if (info->type == CONTINUOUS)
-            return Joint::forward(links, tgt, inc, act_func);
-
-        if (info->type == PRISMATIC)
-            return Joint::forward(links, tgt, inc, act_func);
-
-        throw "unknown joint!";
-    }
-
-    double World::drive(int id, double inc)
-    {
-        std::lock_guard<std::mutex> lock(m);
-        Joint_node *tgt = graph.find(id);
-        INFO *info = tgt->get_info();
-
-        std::function<void(int, _T)> act_func = std::bind((void (World::*)(int, _T))&World::act, this, _1, _2);
-
-        if (info->type == FIXED)
-            throw "Driving a fixed joint!";
-        if (info->type == REVOLUTE)
-        {
-            REVOLUTE_INFO *pinfo = static_cast<REVOLUTE_INFO *>(info);
-            if ((pinfo->pos + inc >= pinfo->min_rad) && (pinfo->pos + inc <= pinfo->max_rad))
-                return Joint::forward(links, tgt, inc, act_func);
-            else
-                return _FALSE;
-        }
-        if (info->type == CONTINUOUS)
-            return Joint::forward(links, tgt, inc, act_func);
-
-        if (info->type == PRISMATIC)
-            return Joint::forward(links, tgt, inc, act_func);
-
-        throw "unknown joint!";
-    }
-
-    void World::set_speed(int id, double speed)
-    {
-        std::lock_guard<std::mutex> lock(m);
-        Joint_node *tgt = graph.find(id);
-        INFO *info = tgt->get_info();
-        info->speed = speed;
-    }
-
-    void World::set_acc(int id, double acc)
-    {
-        std::lock_guard<std::mutex> lock(m);
-        Joint_node *tgt = graph.find(id);
-        INFO *info = tgt->get_info();
-        info->acc = acc;
-    }
-
-    std::vector<_T> World::get_pose(std::initializer_list<int> ids)
-    {
-        std::vector<_T> poses;
-        for (auto id : ids)
-        {
-            Joint_node *tgt = graph.find(id);
-            //   poses.push_back(tgt->get_pose()*(links[tgt->childs_link_id[0]]->init_pose));
-            poses.push_back(tgt->get_pose());
-        }
-
-        return std::move(poses);
-    }
-
-    void World::discrete(std::vector<Vector3d> &pw, std::vector<Vector3d> &discreted_pw, std::vector<Point2i> &tprojs, std::vector<bool> &vis)
-    {
-
-#define DISCRETE_LINE(a, b)                                                                                                      \
-    do                                                                                                                           \
-        if (vis[a] && vis[b])                                                                                                    \
-        {                                                                                                                        \
-            int CNT = std::ceil(std::sqrt(std::pow(tprojs[a][0] - tprojs[b][0], 2) + std::pow(tprojs[a][1] - tprojs[b][1], 2))); \
-            for (int i = 0; i <= CNT; i++)                                                                                       \
-                discreted_pw.push_back(pw[a] + ((pw[b] - pw[a]) / CNT) * i);                                                     \
-        }                                                                                                                        \
-    while (0)
-
-#define PART_DISCRETE(a, b, c, d) \
-    do                            \
-    {                             \
-        DISCRETE_LINE(a, b);      \
-        DISCRETE_LINE(a, c);      \
-        DISCRETE_LINE(a, d);      \
-    } while (0)
-
-        PART_DISCRETE(0, 1, 2, 4);
-        PART_DISCRETE(6, 7, 2, 4);
-        PART_DISCRETE(5, 4, 1, 7);
-        PART_DISCRETE(3, 2, 1, 7);
-
-#undef DISCRETE_LINE
-#undef PART_DISCRETE
-    }
     void World::project_frame(std::vector<Point2i> &projs, std::vector<_T> &t)
     {
         for (auto trans : t)
@@ -147,26 +28,28 @@ namespace Engine
             cam.project_all(cube_in_camera, projs);
         }
     }
+
     std::future<std::vector<pixel>> World::project()
     {
         std::vector<Mesh> cubes;
         Vector4d light_dir = {-2, -2, 1, 1};
         {
             std::lock_guard<std::mutex> lock(m);
-            std::map<int, Link *>::iterator _iter = links.begin();
-
-            while (_iter != links.end())
+            for (auto robot_iter = robots.begin(); robot_iter != robots.end(); robot_iter++)
             {
-                Link it = *links.at(_iter->first);
-                it.transform(inv(pose[-2]));
-                cam.project(it);
-                cubes.push_back(it.mesh);
-                _iter++;
+                std::vector<_T> robot_pose;
+                (*robot_iter)->FK(robot_pose);
+                for (int i = 0; i < (*robot_iter)->bo.size(); i++)
+                {
+                    Link it = *(*robot_iter)->bo[i];
+                    it.transform(inv(pose[-2]) * robot_pose[i]);
+                    cam.project(it);
+                    cubes.push_back(it.mesh);
+                }
             }
         }
         Vector4d v = _T{0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1} * inv(pose[-2]) * light_dir;
-        return this->raster.parallel_rasterize(cubes,v);
-      
+        return this->raster.parallel_rasterize(cubes, v);
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {
@@ -175,62 +58,45 @@ namespace Engine
         return std::move(it.get_corners());
     }
 
-    void World::parse_robot(std::initializer_list<Joint> jo)
+    const Robot *World::parse_robot(std::initializer_list<Part> jo)
     {
 
-        const Joint *base_joint = jo.begin();
-        num_joints = jo.size();
-        int link_cnt = 0;
-
-        Joint_node *curr_node = graph.add_child(base_joint);
-        std::unordered_map<Cube *, int> link2parent_joint;
-        std::unordered_map<Cube *, int> link2link_id;
-
-        auto joint_iter = jo.begin();
-
-        curr_node->set_parent_link_id(link_cnt);
-        emplace(*joint_iter->parent_link, link_cnt);
-        link2link_id.insert({joint_iter->parent_link, link_cnt++});
-        link2parent_joint.insert({joint_iter->parent_link, base_joint->id});
-
-        for (auto l : joint_iter->child_link)
+        int body_num = 0;
+        std::vector<Link *> links;
+        std::vector<Joint *> joints;
+        std::vector<int> vp;
+        std::vector<int> vs;
+        std::unordered_map<Link *, int> upart_map;
+        for (auto iter = jo.begin(); iter != jo.end(); iter++)
         {
-            emplace(*l, link_cnt);
-            curr_node->append_child_link_id(link_cnt);
-            link2link_id.insert({l, link_cnt++});
-            link2parent_joint.insert({l, base_joint->id});
-        }
-        joint_iter++;
-
-        while (joint_iter != jo.end())
-        {
-            int parent_id = link2parent_joint[joint_iter->parent_link];
-            curr_node = graph.insert(parent_id, joint_iter);
-            curr_node->set_parent_link_id(link2link_id[joint_iter->parent_link]);
-            for (auto l : joint_iter->child_link)
+            Part base = *iter;
+            if (upart_map.find(iter->parent_link) == upart_map.end())
             {
-                emplace(*l, link_cnt);
-                curr_node->append_child_link_id(link_cnt);
-                link2link_id.insert({l, link_cnt});
-                link2parent_joint.insert({l, joint_iter->id});
-                act(link_cnt++, graph.find(parent_id)->get_pose());
+                upart_map.insert(std::pair<Link *, int>(iter->parent_link, body_num));
+                this->emplace(*iter->parent_link, body_num);
+                links.emplace_back(iter->parent_link);
+                body_num++;
             }
-            joint_iter++;
+            for (auto p = jo.begin(); p != jo.end(); p++)
+            {
+                if (p->parent_link == iter->parent_link)
+                {
+                    if (upart_map.find(p->child_link) == upart_map.end())
+                    {
+                        upart_map.insert(std::pair<Link *, int>(p->child_link, body_num));
+                        this->emplace(*p->child_link, body_num);
+                        links.emplace_back(p->child_link);
+                        joints.emplace_back(new Joint(*p));
+                        vp.push_back(upart_map[iter->parent_link]);
+                        vs.push_back(upart_map[p->child_link]);
+                        body_num++;
+                    }
+                }
+            }
         }
-        for (auto j = jo.begin(); j != jo.end(); j++)
-        {
-            if (j->info->type == FIXED)
-                continue;
-            std::function<double()> func = std::bind((double (World::*)(int))&World::drive, this, j->id);
-            timer.add(func, 1 _ms);
-        }
-    }
-
-    void World::inverse_dynamics(std::vector<Twist> &v, std::vector<Twist> &dv)
-    {
-        std::lock_guard<std::mutex> lock(m);
-
-        this->graph.InvDynamics_forward(v, dv);
+        Robot *rp = new Robot(vp, vs, joints, links);
+        this->robots.emplace_back(rp);
+        return rp;
     }
 
 }
