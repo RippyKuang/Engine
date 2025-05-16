@@ -12,7 +12,7 @@ namespace Engine
 
     protected:
         double mass;
-        std::string name;
+        std::string name = "default";
         std::vector<Vector4d> corners;
         Mesh mesh;
 
@@ -39,7 +39,6 @@ namespace Engine
                 output << corner.T();
             return output;
         }
-
     };
 
     class Cube : public Link

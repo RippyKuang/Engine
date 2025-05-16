@@ -71,8 +71,9 @@ namespace Engine
                 this->lambda.emplace_back(std::min(this->p[i], this->s[i]));
             }
             timer.add([this]
-                      {for(int i = 0; i < this->jo.size(); i++)
-                        this->jo[i]->jtype->step(1*1e-3); }, 1 _ms);
+                      {
+                        for(int i = 0; i < this->jo.size(); i++)
+                            this->jo[i]->jtype->step(1*1e-3); }, 1 _ms);
         }
         void FK(std::vector<_T> &T) const;
 

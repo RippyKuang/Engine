@@ -13,6 +13,7 @@ namespace Engine
     {
         JType type = DEFAULT;
         virtual void jcalc(M66 &) = 0;
+        virtual void jcalc(_T &) = 0;
         virtual JType get_type() = 0;
         virtual void step(double) = 0;
     };
@@ -37,10 +38,14 @@ namespace Engine
             X = rot(this->fE(q)) * xlt(Vector3d{0, 0, 0});
             //  ms = this->motion_subspace;
         }
+        void jcalc(_T &X) override
+        {
+            X = catRow(catCol(this->fE(q), Vector3d()), catCol(Vector3d().T(), EYE(1)));
+        }
         void step(double dt) override
         {
             q += q_dot * dt;
-          //  q = fmod(q, 2 * M_PI);
+            q = fmod(q, 2 * M_PI);
         }
         Revolute(Vector3d &&axis) : axis(axis)
         {

@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     Part j3(link2, link3, Vector3d{0, 0, -0.075}, new Revolute(AXIS_Z));
 
     const Robot *robot = w.parse_robot({j0, j1, j2, j3});
-    frame.show();
+    frame.show(w.get_camera_handle());
     robot->summary();
 
     while (1)

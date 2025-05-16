@@ -8,17 +8,6 @@ namespace Engine
         init_pose = getTransformMat(EYE(3), center);
     }
 
-    void Camera::project(std::vector<Vector3d> &pw, std::vector<Point2i> &corners, std::vector<bool> &visible, bool keep_all)
-    {
-
-        for (int i = 0; i < pw.size(); i++)
-        {
-            if (!visible[i] && !keep_all)
-                continue;
-            Vector3d temp = this->intrisics * Vector3d{pw[i][1] / pw[i][0], pw[i][2] / pw[i][0], 1};
-            corners.emplace_back(int(temp[0]), int(temp[1]));
-        }
-    }
 
     void Camera::project(Link &lk)
     {

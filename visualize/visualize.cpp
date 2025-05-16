@@ -1,5 +1,6 @@
 #include <visualize.h>
 #include <thread>
+#include <math.h>
 
 namespace Engine
 {
@@ -46,14 +47,86 @@ namespace Engine
         gf->clear_surface();
         return TRUE;
     }
-
-    void GFrame::show()
+    gboolean GFrame::deal_key_press(GtkWidget *widget, GdkEventKey *event, gpointer data)
     {
+        GFrame *gf = (GFrame *)(data);
+        switch (event->keyval)
+        {
+        case GDK_KEY_Up:
+            gf->cam_handle(_T{1, 0, 0, 0.1,
+                              0, 1, 0, 0,
+                              0, 0, 1, 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_Left:
+            gf->cam_handle(_T{1, 0, 0, 0,
+                              0, 1, 0, 0.1,
+                              0, 0, 1, 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_Right:
+            gf->cam_handle(_T{1, 0, 0, 0,
+                              0, 1, 0, -0.1,
+                              0, 0, 1, 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_Down:
+            gf->cam_handle(_T{1, 0, 0, -0.1,
+                              0, 1, 0, 0,
+                              0, 0, 1, 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_a:
+            gf->cam_handle(_T{cos(M_PI / 16), -sin(M_PI / 16), 0, 0,
+                              sin(M_PI / 16), cos(M_PI / 16), 0, 0,
+                              0, 0, 1, 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_w:
+            gf->cam_handle(_T{cos(M_PI / 16), 0, sin(M_PI / 16), 0,
+                              0, 1, 0, 0,
+                              -sin(M_PI / 16), 0, cos(M_PI / 16), 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_d:
+            gf->cam_handle(_T{cos(M_PI / 16), sin(M_PI / 16), 0, 0,
+                              -sin(M_PI / 16), cos(M_PI / 16), 0, 0,
+                              0, 0, 1, 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_s:
+            gf->cam_handle(_T{cos(M_PI / 16), 0, -sin(M_PI / 16), 0,
+                              0, 1, 0, 0,
+                              sin(M_PI / 16), 0, cos(M_PI / 16), 0,
+                              0, 0, 0, 1});
+            break;
+        case GDK_KEY_space:
+            if (!(event->state & GDK_SHIFT_MASK))
+                gf->cam_handle(_T{1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, 0.1,
+                                  0, 0, 0, 1});
+            else
+                gf->cam_handle(_T{1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, -0.1,
+                                  0, 0, 0, 1});
+            break;
+        }
+
+        return TRUE;
+    }
+
+    void GFrame::show(std::function<void(_T)> cam_handle)
+    {
+        this->cam_handle = cam_handle;
         gtk_widget_show(this->window);
         gtk_widget_show(this->canvas);
         time_handler(this->window);
         g_signal_connect(this->window, "destroy",
                          G_CALLBACK(gtk_main_quit), NULL);
+        g_signal_connect(this->window, "key-press-event",
+                         G_CALLBACK(deal_key_press), this);
 
         std::thread t(gtk_main);
         t.detach();
@@ -63,12 +136,8 @@ namespace Engine
         std::lock_guard<std::mutex> lock(m);
 
         if (this->fut.valid())
-        {
-            auto x = std::chrono::system_clock::now().time_since_epoch().count();
             this->datas = std::move(this->fut.get());
-            auto y = std::chrono::system_clock::now().time_since_epoch().count();
-            //    std::cout << "time: " << (y - x) / 1e9 << std::endl;
-        }
+
         for (int i = 0; i < datas.size(); i++)
         {
             cairo_set_source_rgb(cr, datas[i].color[0], datas[i].color[1], datas[i].color[2]);
@@ -130,6 +199,7 @@ namespace Engine
                          G_CALLBACK(GFrame::draw_cb), this);
         g_signal_connect(this->canvas, "configure-event",
                          G_CALLBACK(GFrame::configure_event_cb), this);
+
         g_timeout_add(1, (GSourceFunc)(GFrame::time_handler), (gpointer)this->window);
     }
 }

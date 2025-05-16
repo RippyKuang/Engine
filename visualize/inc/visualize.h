@@ -5,6 +5,7 @@
 #include <matrix.h>
 #include <mutex>
 #include <future>
+#include <gdk/gdkkeysyms.h>
 
 namespace Engine
 {
@@ -14,13 +15,7 @@ namespace Engine
         cairo_move_to(e, a, b); \
         cairo_line_to(e, c, d); \
     } while (0)
-#define CUBE_LINE(a, b, c)                                                                                                \
-    do                                                                                                                    \
-    {                                                                                                                     \
-        if (datas[a + c * 8][0] != -99 && datas[b + c * 8][0] != -99)                                               \
-            LINE(w - datas[a + c * 8][0], h - datas[a + c * 8][1], w - datas[b + c * 8][0], h - datas[b + c * 8][1], cr); \
-        cairo_stroke(cr);                                                                                                 \
-    } while (0)
+
     class GFrame
     {
     private:
@@ -29,9 +24,10 @@ namespace Engine
         cairo_surface_t *surface = NULL;
         void clear_surface(void);
         void processData(cairo_t *);
-        std::vector<pixel> datas; 
+        std::vector<pixel> datas;
         std::vector<Point2i> frame_datas;
         std::future<std::vector<pixel>> fut;
+        std::function<void(_T)> cam_handle;
         std::mutex m;
         const int w;
         const int h;
@@ -40,11 +36,12 @@ namespace Engine
         static gboolean configure_event_cb(GtkWidget *,
                                            GdkEventConfigure *,
                                            gpointer);
+        static gboolean deal_key_press(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
     public:
-        GFrame(int argc, char *argv[],int w,int h);
-        void show();
-        void updateData(std::vector<pixel>& data,std::vector<Point2i> frame_data={});
-        void updateFuture(std::future<std::vector<pixel>> &&fut,std::vector<Point2i> frame_data={});
+        GFrame(int argc, char *argv[], int w, int h);
+        void show(std::function<void(_T)> cam_handle);
+        void updateData(std::vector<pixel> &data, std::vector<Point2i> frame_data = {});
+        void updateFuture(std::future<std::vector<pixel>> &&fut, std::vector<Point2i> frame_data = {});
     };
 }

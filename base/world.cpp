@@ -9,10 +9,6 @@ namespace Engine
         links.insert(std::pair<int, Link *>(id, &i));
     }
 
-    void World::act(int id, _T t)
-    {
-        (*links.at(id)).transform(std::move(t));
-    }
 
     void World::project_frame(std::vector<Point2i> &projs, std::vector<_T> &t)
     {

@@ -17,7 +17,7 @@ namespace Engine
     {
         std::vector<pixel> pixels;
         int buffer_id = this->alloc_z_buffer();
-       
+
         for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
         {
 
@@ -51,10 +51,31 @@ namespace Engine
                         x13 * x21 - x11 * x23,
                         x11 * x22 - x12 * x21};
 
-                int min_x = floor(std::min({p0[0], p1[0], p2[0]}));
-                int max_x = ceil(std::max({p0[0], p1[0], p2[0]}));
-                int min_y = floor(std::min({p0[1], p1[1], p2[1]}));
-                int max_y = ceil(std::max({p0[1], p1[1], p2[1]}));
+                float min_xf = p0[0], max_xf = p0[0];
+                float min_yf = p0[1], max_yf = p0[1];
+
+                if (p1[0] < min_xf)
+                    min_xf = p1[0];
+                else if (p1[0] > max_xf)
+                    max_xf = p1[0];
+                if (p2[0] < min_xf)
+                    min_xf = p2[0];
+                else if (p2[0] > max_xf)
+                    max_xf = p2[0];
+
+                if (p1[1] < min_yf)
+                    min_yf = p1[1];
+                else if (p1[1] > max_yf)
+                    max_yf = p1[1];
+                if (p2[1] < min_yf)
+                    min_yf = p2[1];
+                else if (p2[1] > max_yf)
+                    max_yf = p2[1];
+
+                int min_x = static_cast<int>(std::floor(min_xf));
+                int max_x = static_cast<int>(std::ceil(max_xf));
+                int min_y = static_cast<int>(std::floor(min_yf));
+                int max_y = static_cast<int>(std::ceil(max_yf));
 
                 double _a = f(p0[0], p0[1], p1, p2);
                 double _b = f(p1[0], p1[1], p2, p0);
@@ -87,6 +108,7 @@ namespace Engine
                         if (alpha_xy >= -1e-6 && beta_xy >= -1e-6 && gamma_xy >= -1e-6)
                         {
                             double z = (_p0[2] * alpha_xy + _p1[2] * beta_xy + _p2[2] * gamma_xy);
+
                             float &z_val = this->z_buffer[buffer_id][x + y * w];
                             if (z < z_val - 1e-5)
                             {
