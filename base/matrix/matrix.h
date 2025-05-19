@@ -212,6 +212,7 @@ namespace Engine
 
     using Vector3d = Matrix<double, 3, 1>;
     using Vector4d = Matrix<double, 4, 1>;
+    using Vector6d = Matrix<double, 6, 1>;
     using Point2d = Matrix<double, 2, 1>;
     using Point2i = Matrix<int, 2, 1>;
     using _T = Matrix<double, 4, 4>;

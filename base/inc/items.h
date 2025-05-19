@@ -11,6 +11,7 @@ namespace Engine
         friend class Part;
 
     protected:
+        ad_se3 inertia;
         double mass;
         std::string name = "default";
         std::vector<Vector4d> corners;
@@ -29,6 +30,10 @@ namespace Engine
             this->mass = t.mass;
         };
         void transform(_T);
+        ad_se3 get_inertia()
+        {
+            return this->inertia;
+        }
         void set_name(std::string name);
         std::string get_name() { return this->name; }
         std::vector<Vector4d> &get_corners();
@@ -43,8 +48,7 @@ namespace Engine
 
     class Cube : public Link
     {
-    private:
-        ad_se3 inertia;
+
 
     public:
         Cube(Vector3d box, Vector3d rpy = Vector3d{0, 0, 0}, Vector3d xyz = Vector3d{0, 0, 0}, double mass = 1);

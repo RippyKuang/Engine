@@ -1,5 +1,6 @@
 #pragma once
 #include <rmath.h>
+#include <type_traits>
 
 namespace Engine
 {
@@ -9,15 +10,16 @@ namespace Engine
         DEFAULT,
         REVOLUTE
     };
+
     struct BaseJoint
     {
         JType type = DEFAULT;
-        virtual void jcalc(M66 &) = 0;
-        virtual void jcalc(_T &) = 0;
+        using space_type = void;
+        virtual void jcalc(M66 &, Vector6d &) = 0;
         virtual JType get_type() = 0;
         virtual void step(double) = 0;
     };
-
+    
     class Revolute : public BaseJoint
     {
     private:
@@ -25,25 +27,31 @@ namespace Engine
         Matrix<double, 6, 5> constraint_subspace;
         Vector3d axis;
         _R (*fE)(double);
-        double q=0;
-        double q_dot=1;
+        double q = 0;
+        double q_dot = 1;
+        double v_dot = 0;
 
     public:
+        using space_type = Matrix<double, 6, 1>;
         JType get_type() override
         {
             return this->type;
         }
-        void jcalc(M66 &X) override
+        void jcalc(M66 &X, Vector6d &vj) override
         {
             X = rot(this->fE(q)) * xlt(Vector3d{0, 0, 0});
+            vj = this->motion_subspace * q_dot;
             //  ms = this->motion_subspace;
         }
-        void jcalc(_T &X) override
+
+        Matrix<double, 6, 1> get_motion_subspace()
         {
-            X = catRow(catCol(this->fE(q), Vector3d()), catCol(Vector3d().T(), EYE(1)));
+            return this->motion_subspace;
         }
+
         void step(double dt) override
         {
+            q_dot += v_dot * dt;
             q += q_dot * dt;
             q = fmod(q, 2 * M_PI);
         }

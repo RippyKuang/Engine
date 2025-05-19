@@ -34,7 +34,8 @@ namespace Engine
             for (auto robot_iter = robots.begin(); robot_iter != robots.end(); robot_iter++)
             {
                 std::vector<_T> robot_pose;
-                (*robot_iter)->FK(robot_pose);
+                std::vector<Vector6d> robot_v;
+                (*robot_iter)->FK(robot_pose, robot_v);
                 for (int i = 0; i < (*robot_iter)->bo.size(); i++)
                 {
                     Link it = *(*robot_iter)->bo[i];

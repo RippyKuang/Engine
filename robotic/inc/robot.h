@@ -75,8 +75,8 @@ namespace Engine
                         for(int i = 0; i < this->jo.size(); i++)
                             this->jo[i]->jtype->step(1*1e-3); }, 1 _ms);
         }
-        void FK(std::vector<_T> &T) const;
-
+        void FK(std::vector<_T> &T, std::vector<Vector6d> &v) const;
+        void ID(std::vector<Vector6d> &tau,std::vector<double> &v_dot)const;
         void summary() const;
     };
 
