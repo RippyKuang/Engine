@@ -7,6 +7,5 @@ A light-weighted Robot Simulator based on C++&GTK
 - [x] Trajectory Generation 
 - [ ] Interactive robot control
 - [x] Forward Kinematics
-- [ ] Inverse Kinematics
 - [ ] Forward Dynamics
-- [ ] Inverse Dynamics
+- [x] Inverse Dynamics

@@ -41,7 +41,7 @@ namespace Engine
         }
     }
 
-    void Robot::ID(std::vector<Vector6d> &tau,std::vector<double> &v_dot) const
+    void Robot::ID(std::vector<Vector6d> &tau, std::vector<double> &v_dot) const
     {
         std::vector<Vector6d> v;
         std::vector<Vector6d> a;
@@ -50,22 +50,22 @@ namespace Engine
         v.emplace_back(Vector6d());
         X.emplace_back(EYE(6));
         a.emplace_back(Vector6d({0, 0, 0, 0, 0, -9.81}));
-        for (int i=0;i<this->bo.size()-1;i++)
+        for (int i = 0; i < this->bo.size() - 1; i++)
         {
             M66 Xj;
             Vector6d vj;
-            BaseJoint* joint = jo[i]->jtype;
+            BaseJoint *joint = jo[i]->jtype;
 
-            if(joint->get_type() == JType::REVOLUTE)
+            if (joint->get_type() == JType::REVOLUTE)
             {
-                Revolute* rjoint = reinterpret_cast<Revolute*>(joint);
+                Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
                 rjoint->jcalc(Xj, vj);
                 M66 I = bo[i]->get_inertia();
                 M66 Xip = Xj * jo[i]->parent2joint;
                 M66 Xi0 = Xip * X[this->lambda[i]];
-                Vector6d vi = Xip*v[this->lambda[i]] + vj;
-                Vector6d ai = Xip*a[this->lambda[i]] + rjoint->get_motion_subspace()*v_dot[i]+crm(vi)*vj;
-                Vector6d fi =  I* ai +crf(vi)*I*vi;
+                Vector6d vi = Xip * v[this->lambda[i]] + vj;
+                Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
+                Vector6d fi = I * ai + crf(vi) * I * vi;
                 X.emplace_back(Xip);
                 v.emplace_back(vi);
                 a.emplace_back(ai);
@@ -73,17 +73,15 @@ namespace Engine
             }
         }
 
-        for(int i = this->bo.size()-2;i>=0;i--)
+        for (int i = this->bo.size() - 2; i >= 0; i--)
         {
-            BaseJoint* joint = jo[i]->jtype;
-            if(joint->get_type() == JType::REVOLUTE)
+            BaseJoint *joint = jo[i]->jtype;
+            if (joint->get_type() == JType::REVOLUTE)
             {
-                Revolute* rjoint = reinterpret_cast<Revolute*>(joint);
-                tau.emplace_back(rjoint->get_motion_subspace().T()*f[i]);
-                f[this->lambda[i]] = f[this->lambda[i]]+ X[i].T()*f[i];
+                Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
+                tau.emplace_back(rjoint->get_motion_subspace().T() * f[i]);
+                f[this->lambda[i]] = f[this->lambda[i]] + X[i].T() * f[i];
             }
-           
         }
-
     }
 }
