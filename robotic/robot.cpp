@@ -84,4 +84,13 @@ namespace Engine
             }
         }
     }
+
+    void Robot::FD(std::vector<Vector6d> &tau)const
+    {
+        std::vector<Vector6d> C;
+        DynamicMatrix<DynamicMatrix<double>> H(this->jo.size(), this->jo.size());
+        std::vector<double> zero(0,tau.size());
+        this->ID(C,zero);
+        
+    } 
 }

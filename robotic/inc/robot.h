@@ -5,6 +5,7 @@
 #include <twist.h>
 #include <map>
 #include <timer.h>
+#include <dynamic_matrix.h>
 
 namespace Engine
 {
@@ -77,6 +78,7 @@ namespace Engine
         }
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v) const;
         void ID(std::vector<Vector6d> &tau, std::vector<double> &v_dot) const;
+        void FD(std::vector<Vector6d> &tau)const;
         void summary() const;
     };
 
