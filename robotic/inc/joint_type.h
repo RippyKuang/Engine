@@ -41,7 +41,6 @@ namespace Engine
         {
             X = rot(this->fE(q)) * xlt(Vector3d{0, 0, 0});
             vj = this->motion_subspace * q_dot;
-            //  ms = this->motion_subspace;
         }
 
         Matrix<double, 6, 1> get_motion_subspace()

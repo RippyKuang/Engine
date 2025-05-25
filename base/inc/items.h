@@ -29,6 +29,7 @@ namespace Engine
             this->mesh = std::move(t.mesh);
             this->mass = t.mass;
         };
+
         void transform(_T);
         ad_se3 get_inertia()
         {

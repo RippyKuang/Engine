@@ -4,7 +4,7 @@
 namespace Engine
 {
 
-    void World::emplace(Cube &i, int id)
+    void World::emplace(Link &i, int id)
     {
         links.insert(std::pair<int, Link *>(id, &i));
     }
@@ -28,7 +28,7 @@ namespace Engine
     std::future<std::vector<pixel>> World::project()
     {
         std::vector<Mesh> cubes;
-        Vector4d light_dir = {-2, -2, 1, 1};
+        Vector4d light_dir = {-2, -2, 5, 1};
         {
             std::lock_guard<std::mutex> lock(m);
             for (auto robot_iter = robots.begin(); robot_iter != robots.end(); robot_iter++)

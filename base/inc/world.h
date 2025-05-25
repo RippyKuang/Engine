@@ -23,7 +23,7 @@ namespace Engine
         Timer timer;
         Camera cam;
         std::vector<Vector4d> getCoord(int id, int base = -1);
-        void emplace(Cube &, int);
+        void emplace(Link &, int);
         std::vector<Robot *> robots;
         Rasterizer raster;
 

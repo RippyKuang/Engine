@@ -16,19 +16,19 @@ namespace Engine
         friend class Joint;
 
     protected:
-        Cube *parent_link;
-        Cube *child_link;
+        Link *parent_link;
+        Link *child_link;
         Vector3d origin;
         BaseJoint *type;
         int id;
 
     public:
-        Part(Cube &_pi, Cube &_ci, Vector3d _origin, BaseJoint *_type) : parent_link(&_pi), origin(_origin),
+        Part(Link &_pi, Link &_ci, Vector3d _origin, BaseJoint *_type) : parent_link(&_pi), origin(_origin),
                                                                          type(_type)
         {
             this->add_child_link(_ci);
         }
-        void add_child_link(Cube &);
+        void add_child_link(Link &);
     };
 
     struct Joint
@@ -76,7 +76,7 @@ namespace Engine
                             this->jo[i]->jtype->step(1*1e-3); }, 1 _ms);
         }
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v) const;
-        void ID(std::vector<Vector6d> &tau,std::vector<double> &v_dot)const;
+        void ID(std::vector<Vector6d> &tau, std::vector<double> &v_dot) const;
         void summary() const;
     };
 

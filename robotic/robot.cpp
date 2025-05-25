@@ -2,7 +2,7 @@
 
 namespace Engine
 {
-    void Part::add_child_link(Cube &link)
+    void Part::add_child_link(Link &link)
     {
         child_link = &link;
     }
@@ -62,7 +62,7 @@ namespace Engine
                 rjoint->jcalc(Xj, vj);
                 M66 I = bo[i]->get_inertia();
                 M66 Xip = Xj * jo[i]->parent2joint;
-                M66 Xi0 = Xip * X[this->lambda[i]];
+
                 Vector6d vi = Xip * v[this->lambda[i]] + vj;
                 Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
                 Vector6d fi = I * ai + crf(vi) * I * vi;
