@@ -15,12 +15,10 @@ using namespace Engine;
 int main(int argc, char *argv[])
 {
     DynamicMatrix<DynamicMatrix<double>> mat(2, 2);
-    mat.data[0] = DynamicMatrix<double>(Matrix<double, 2, 3>({1, 2, 3,
-                                                              4, 5, 6}));
-    mat.data[1] = DynamicMatrix<double>(Matrix<double, 2, 3>({1, 2, 3,
-                                                              4, 5, 6}));
-    mat.data[2] = DynamicMatrix<double>(Matrix<double, 1, 3>({1, 2, 3}));
-    mat.data[3] = DynamicMatrix<double>(Matrix<double, 1, 3>({1, 2, 3}));
+    mat.data[0] = DynamicMatrix<double>(1,2,3,4,5,6).set_size(2,3);
+    mat.data[1] = DynamicMatrix<double>(1,2,3,4,5,6).set_size(2,3);
+    mat.data[2] = DynamicMatrix<double>(1,2,3).set_size(1,3);
+    mat.data[3] = DynamicMatrix<double>(1,2,3).set_size(1,3);
 
 
     std::cout <<mat.get_size()<<std::endl;;

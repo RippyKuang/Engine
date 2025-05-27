@@ -108,9 +108,56 @@ namespace Engine
                 data[i] = x[i];
         }
 
+        DynamicMatrix(DynamicMatrix<T> &&m)
+        {   
+            this->rows = m.rows;
+            this->cols = m.cols;
+            this->data = m.data;
+            m.data = nullptr;
+        }
+
+        void _impl_args(int index, const T &t)
+        {
+            this->data[index] = t;
+        }
+
+        template <typename... Args>
+        void _impl_args(int index, const T &t, const Args &...rest)
+        {
+            this->data[index] = t;
+            _impl_args(index + 1, rest...);
+        }
+
+        template <typename... Args>
+        DynamicMatrix(const T &t, const Args &...rest): rows(1), cols(sizeof...(rest) + 1)
+        {
+
+            this->data = (T *)malloc((sizeof...(rest) + 1) * sizeof(T));
+            this->data[0] = t;
+            _impl_args(1, rest...);
+        }
+
+        template <typename _T, typename = typename std::enable_if<is_instantiation_of<_T, DynamicMatrix>::value>::type>
+        DynamicMatrix &operator=(_T &&b)
+        {
+
+            this->data = b.data;
+            this->rows = b.rows;
+            this->cols = b.cols;
+            b.data = nullptr;
+            return *this;
+        }
+
         Point2i get_size()
         {
             return Point2i(rows, cols);
+        }
+      
+        DynamicMatrix set_size(int r, int c)
+        {
+            this->rows = r;
+            this->cols = c;
+            return std::move(*this);
         }
 
         T at(int row, int col)
