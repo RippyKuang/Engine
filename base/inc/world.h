@@ -43,7 +43,7 @@ namespace Engine
             };
         }
 
-        const Robot *parse_robot(std::initializer_list<Part>);
+        Robot *parse_robot(std::initializer_list<Part>);
         void project_frame(std::vector<Point2i> &, std::vector<_T> &);
         std::future<std::vector<pixel>> project();
     };

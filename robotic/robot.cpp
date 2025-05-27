@@ -41,12 +41,11 @@ namespace Engine
         }
     }
 
-    void Robot::ID(std::vector<Vector6d> &tau, std::vector<double> &v_dot) const
+    void Robot::ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X) const
     {
         std::vector<Vector6d> v;
         std::vector<Vector6d> a;
         std::vector<Vector6d> f;
-        std::vector<M66> X;
         v.emplace_back(Vector6d());
         X.emplace_back(EYE(6));
         a.emplace_back(Vector6d({0, 0, 0, 0, 0, -9.81}));
@@ -60,7 +59,7 @@ namespace Engine
             {
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
                 rjoint->jcalc(Xj, vj);
-                M66 I = bo[i]->get_inertia();
+                M66 I = Xj.T() * bo[i + 1]->get_inertia() * Xj;
                 M66 Xip = Xj * jo[i]->parent2joint;
 
                 Vector6d vi = Xip * v[this->lambda[i]] + vj;
@@ -79,18 +78,68 @@ namespace Engine
             if (joint->get_type() == JType::REVOLUTE)
             {
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
-                tau.emplace_back(rjoint->get_motion_subspace().T() * f[i]);
-                f[this->lambda[i]] = f[this->lambda[i]] + X[i].T() * f[i];
+                tau.emplace_back((rjoint->get_motion_subspace().T() * f[i])[0]);
+
+                if (this->lambda[i] != 0)
+                    f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + X[i + 1].T() * f[i];
             }
         }
     }
 
-    void Robot::FD(std::vector<Vector6d> &tau)const
+    void Robot::FD(std::vector<double> &tau) const
     {
-        // std::vector<Vector6d> C;
-        // DynamicMatrix<DynamicMatrix<double>> H(this->jo.size(), this->jo.size());
-        // std::vector<double> zero(0,tau.size());
-        // this->ID(C,zero);
-        
-    } 
+        std::vector<double> C;
+        std::vector<M66> X;
+        DynamicMatrix<DynamicMatrix<double>> H(this->jo.size(), this->jo.size());
+        std::vector<double> zero(tau.size(), 0.0);
+        this->ID(C, zero, X);
+        std::vector<M66> Ic;
+        for (int i = 1; i < this->bo.size(); i++)
+        {
+            BaseJoint *joint = jo[i - 1]->jtype;
+            M66 Xj;
+            Vector6d vj;
+            joint->jcalc(Xj, vj);
+            Ic.emplace_back(Xj.T() * this->bo[i]->get_inertia() * Xj);
+        }
+        for (int i = bo.size() - 2; i >= 0; i--)
+        {
+
+            BaseJoint *joint = jo[i]->jtype;
+
+            if (joint->get_type() == JType::REVOLUTE)
+            {
+
+                Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
+
+                if (this->lambda[i] != 0)
+                    Ic[this->lambda[i] - 1] = Ic[this->lambda[i] - 1] + X[i + 1].T() * Ic[i] * X[i + 1];
+                auto Si = rjoint->get_motion_subspace();
+                auto F = Ic[i] * Si;
+                H.data[i * this->jo.size() + i] = DynamicMatrix<double>(Si.T() * F);
+                int j = i;
+                while (this->lambda[j] != 0)
+                {
+                    F = X[j + 1].T() * F;
+                    j = this->lambda[j] - 1;
+                    H.data[i * this->jo.size() + j] = DynamicMatrix<double>(F.T() * Si);
+                    H.data[j * this->jo.size() + i] = H.data[i * this->jo.size() + j].T();
+                }
+            }
+        }
+
+        DynamicMatrix<double> b(this->jo.size(), 1);
+        for (int i = 0; i < this->jo.size(); i++)
+        {
+            b.data[i] = tau[i] - C[i];
+        }
+        DynamicMatrix<double> x(this->jo.size(), 1);
+        solve(H.dense(), std::move(b), x);
+        for (int i = 0; i < this->jo.size(); i++)
+        {
+            auto joint = reinterpret_cast<Revolute *>(this->jo[i]->jtype);
+            joint->set_v_dot(x.data[i]);
+            std::cout << "Joint " << i << " v_dot: " << x.data[i] << " C:" << C[i] << std::endl;
+        }
+    }
 }

@@ -7,6 +7,9 @@ namespace Engine
     template <typename T, typename Enable>
     struct DynamicMatrix;
 
+    template <typename Type>
+    struct DynamicMatrix<Type, typename std::enable_if<std::is_arithmetic<Type>::value>::type>;
+
     template <typename inst, template <typename...> typename tmpl>
     struct is_instantiation_of : std::false_type
     {
@@ -72,7 +75,7 @@ namespace Engine
                 }
                 col -= data[j].get_size()[1];
             }
-            return data[this->rows * target_row + target_col].at(row, col);
+            return data[this->cols * target_row + target_col].at(row, col);
         }
 
         void custom_free()
@@ -86,53 +89,68 @@ namespace Engine
         {
             this->custom_free();
         }
+
+        DynamicMatrix<typename find_type<T>::type> dense()
+        {
+            Point2i size = this->get_size();
+            using Type = typename find_type<T>::type;
+            Type *new_data = (Type *)malloc(rows * cols * sizeof(Type));
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                    new_data[i * cols + j] = this->at(i, j);
+
+            DynamicMatrix<Type> dense_matrix(size[0], size[1]);
+            dense_matrix.data = new_data;
+            return std::move(dense_matrix);
+        }
     };
 
-    template <typename T>
-    struct DynamicMatrix<T, typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    template <typename Type>
+    struct DynamicMatrix<Type, typename std::enable_if<std::is_arithmetic<Type>::value>::type>
     {
         int rows;
         int cols;
-        T *data;
-        using value_type = T;
+        Type *data;
+        using value_type = Type;
         DynamicMatrix(int r, int c) : rows(r), cols(c)
         {
-            data = (T *)malloc(rows * cols * sizeof(T));
+            data = (Type *)malloc(rows * cols * sizeof(Type));
+            memset(data, 0, rows * cols * sizeof(Type));
         }
 
         template <int rows, int cols>
-        DynamicMatrix(Matrix<T, rows, cols> x) : rows(rows), cols(cols)
+        DynamicMatrix(Matrix<Type, rows, cols> x) : rows(rows), cols(cols)
         {
-            data = (T *)malloc(rows * cols * sizeof(T));
+            data = (Type *)malloc(rows * cols * sizeof(Type));
             for (int i = 0; i < rows * cols; i++)
                 data[i] = x[i];
         }
 
-        DynamicMatrix(DynamicMatrix<T> &&m)
-        {   
+        DynamicMatrix(DynamicMatrix<Type> &&m)
+        {
             this->rows = m.rows;
             this->cols = m.cols;
             this->data = m.data;
             m.data = nullptr;
         }
 
-        void _impl_args(int index, const T &t)
+        void _impl_args(int index, const Type &t)
         {
             this->data[index] = t;
         }
 
         template <typename... Args>
-        void _impl_args(int index, const T &t, const Args &...rest)
+        void _impl_args(int index, const Type &t, const Args &...rest)
         {
             this->data[index] = t;
             _impl_args(index + 1, rest...);
         }
 
         template <typename... Args>
-        DynamicMatrix(const T &t, const Args &...rest): rows(1), cols(sizeof...(rest) + 1)
+        DynamicMatrix(const Type &t, const Args &...rest) : rows(1), cols(sizeof...(rest) + 1)
         {
 
-            this->data = (T *)malloc((sizeof...(rest) + 1) * sizeof(T));
+            this->data = (Type *)malloc((sizeof...(rest) + 1) * sizeof(Type));
             this->data[0] = t;
             _impl_args(1, rest...);
         }
@@ -152,15 +170,25 @@ namespace Engine
         {
             return Point2i(rows, cols);
         }
-      
-        DynamicMatrix set_size(int r, int c)
+
+        DynamicMatrix<Type> set_size(int r, int c)
         {
             this->rows = r;
             this->cols = c;
             return std::move(*this);
         }
 
-        T at(int row, int col)
+        DynamicMatrix<Type> T()
+        {
+            DynamicMatrix<Type> m(cols,rows);
+            for (int r = 0; r < cols; r++)
+                for (int c = 0; c < rows; c++)
+                    m.data[r * rows + c] = this->data[c * cols + r];
+
+            return std::move(m);
+        }
+
+        Type at(int row, int col)
         {
             return data[row * cols + col];
         }
@@ -170,5 +198,55 @@ namespace Engine
             free(data);
         }
     };
+
+    inline void solve(DynamicMatrix<double> A, DynamicMatrix<double> b, DynamicMatrix<double> &x)
+    {
+        int n = A.rows;
+        if (A.cols != n || b.cols != 1 || b.rows != n)
+        {
+            throw std::invalid_argument("Incompatible dimensions for Cholesky solve.");
+        }
+
+        DynamicMatrix<double> L(n, n);
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j <= i; ++j)
+            {
+                double sum = 0.0;
+                for (int k = 0; k < j; ++k)
+                    sum += L.at(i, k) * L.at(j, k);
+
+                if (i == j)
+                {
+                    double diag = A.at(i, i) - sum;
+                    if (diag <= 0.0)
+                        throw std::runtime_error("Matrix is not positive definite.");
+                    L.data[i * n + j] = std::sqrt(diag);
+                }
+                else
+                {
+                    L.data[i * n + j] = (A.at(i, j) - sum) / L.at(j, j);
+                }
+            }
+        }
+
+        DynamicMatrix<double> y(n, 1);
+        for (int i = 0; i < n; ++i)
+        {
+            double sum = 0.0;
+            for (int k = 0; k < i; ++k)
+                sum += L.at(i, k) * y.at(k, 0);
+            y.data[i] = (b.at(i, 0) - sum) / L.at(i, i);
+        }
+
+        x = DynamicMatrix<double>(n, 1);
+        for (int i = n - 1; i >= 0; --i)
+        {
+            double sum = 0.0;
+            for (int k = i + 1; k < n; ++k)
+                sum += L.at(k, i) * x.at(k, 0);
+            x.data[i] = (y.at(i, 0) - sum) / L.at(i, i);
+        }
+    }
 
 }

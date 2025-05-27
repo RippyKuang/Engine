@@ -29,9 +29,9 @@ namespace Engine
         _T init_pose = getTransformMat(rpy2rot(rpy), xyz);
         transform(init_pose);
         _T inv_pose = inv(init_pose);
-        _R I = {this->mass * (y + z) / 12, 0, 0,
-                0, this->mass * (x + z) / 12, 0,
-                0, 0, this->mass * (x + y) / 12};
+        _R I = {this->mass * (y*y + z*z) / 12, 0, 0,
+                0, this->mass * (x*x + z*z) / 12, 0,
+                0, 0, this->mass * (x*x + y*y) / 12};
         this->inertia = adjoint(inv_pose).T() * (catRow(catCol(I,_R()),catCol(_R(), EYE(3) * this->mass ))) * adjoint(inv_pose);
     }
 

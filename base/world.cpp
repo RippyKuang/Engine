@@ -55,7 +55,7 @@ namespace Engine
         return std::move(it.get_corners());
     }
 
-    const Robot *World::parse_robot(std::initializer_list<Part> jo)
+    Robot *World::parse_robot(std::initializer_list<Part> jo)
     {
 
         int body_num = 0;

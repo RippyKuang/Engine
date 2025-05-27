@@ -14,22 +14,40 @@ using namespace Engine;
 
 int main(int argc, char *argv[])
 {
-    DynamicMatrix<DynamicMatrix<double>> mat(2, 2);
-    mat.data[0] = DynamicMatrix<double>(1,2,3,4,5,6).set_size(2,3);
-    mat.data[1] = DynamicMatrix<double>(1,2,3,4,5,6).set_size(2,3);
-    mat.data[2] = DynamicMatrix<double>(1,2,3).set_size(1,3);
-    mat.data[3] = DynamicMatrix<double>(1,2,3).set_size(1,3);
+    const int ww = 1280;
+    const int hh = 1024;
+    Engine::GFrame frame(argc, argv, ww, hh);
+    Cube base_link(Vector3d{0.05, 0.05, 0.2});
+    Cube link0(Vector3d{0.05, 0.2, 0.05}, Vector3d{0, 0, 0}, Vector3d{0, -0.1 + 0.025, 0});
+    Cube link1(Vector3d{0.05, 0.2, 0.05}, Vector3d{0, 0, 0}, Vector3d{0, -0.1, 0});
 
+    base_link.set_name("base_link");
+    link0.set_name("link0");
+    link1.set_name("link1");
 
-    std::cout <<mat.get_size()<<std::endl;;
-    for(int i =0;i<mat.get_size()[0];i++)
+    Camera camera(Vector3d{-0.6, -0.3, 0.2}, _R{300, 0, ww / 2, 0, 300, hh / 2, 0, 0, 1});
+    World w(camera, ww, hh);
+
+    Part j0(base_link, link0, Vector3d{0, 0, 0.2 / 2 - 0.025}, new Revolute(AXIS_X));
+    Part j1(link0, link1, Vector3d{0, -0.2, 0}, new Revolute(AXIS_X));
+
+    Robot *robot = w.parse_robot({j0,j1});
+    frame.show(w.get_camera_handle());
+    robot->summary();
+    robot->set_tau({0,0});
+    while (1)
     {
-        for(int j =0;j<mat.get_size()[1];j++)
-        {
-            std::cout<<mat.at(i,j)<<" ";
-        }
-        std::cout<<std::endl;
+        std::vector<Point2i> frame_projs;
+        // std::vector<double> tau;
+        // std::vector<double> v_dot{0,0};
+        // std::vector<M66> X;
+        // robot->ID(tau, v_dot, X);
+        // robot->set_tau(tau);
+        std::vector<pixel> projs;
+        auto promise = w.project();
+        usleep(50000);
+        frame.updateFuture(std::move(promise));
     }
-    
     return 0;
+
 }
