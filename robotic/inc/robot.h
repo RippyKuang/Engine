@@ -53,7 +53,7 @@ namespace Engine
         std::vector<int> lambda;
         std::vector<Joint *> jo;
         std::vector<double> tau;
-        std::mutex tau_lock;
+        std::mutex dynamic_lock;
         std::thread daemon;
         bool daemon_running = true;
 
@@ -78,26 +78,16 @@ namespace Engine
 
             daemon = std::thread(&Robot::daemon_run, this);
         }
-        void FK(std::vector<_T> &T, std::vector<Vector6d> &v) const;
-        void ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X) const;
-        void FD(std::vector<double> &tau) const;
+        void FK(std::vector<_T> &T, std::vector<Vector6d> &v);
+        void ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X);
+        void FD(std::vector<double> &tau);
         void daemon_run()
         {
             using namespace std;
             using namespace chrono;
             while (daemon_running)
             {
-                // using namespace std;
-                // using namespace chrono;
-                // auto start = system_clock::now();
-                 this->FD(this->tau);
-                // auto end = system_clock::now();
-                // auto duration = duration_cast<microseconds>(end - start);
-                // cout << "花费了"
-                //      << double(duration.count()) * microseconds::period::num / microseconds::period::den
-                //      << "秒" << endl;
-
-               
+                 this->FD(this->tau);               
                 for (int i = 0; i < this->jo.size(); i++)
                     this->jo[i]->jtype->step(1e-6);
             }

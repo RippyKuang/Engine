@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     {
         std::vector<Point2i> frame_projs;
         // std::vector<double> tau;
-        // std::vector<double> v_dot{1,1};
+        // std::vector<double> v_dot{0,1};
         // std::vector<M66> X;
         // robot->ID(tau, v_dot, X);
         // robot->set_tau(tau);

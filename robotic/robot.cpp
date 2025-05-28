@@ -19,7 +19,7 @@ namespace Engine
         }
     }
 
-    void Robot::FK(std::vector<_T> &T, std::vector<Vector6d> &v) const
+    void Robot::FK(std::vector<_T> &T, std::vector<Vector6d> &v)
     {
         std::vector<M66> X;
         T.emplace_back(EYE(4));
@@ -41,8 +41,9 @@ namespace Engine
         }
     }
 
-    void Robot::ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X) const
+    void Robot::ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X)
     {
+   
         std::vector<Vector6d> v;
         std::vector<Vector6d> a;
         std::vector<Vector6d> f;
@@ -87,7 +88,7 @@ namespace Engine
         }
     }
 
-    void Robot::FD(std::vector<double> &tau) const
+    void Robot::FD(std::vector<double> &tau) 
     {
         std::vector<double> C;
         std::vector<M66> X;

@@ -25,7 +25,7 @@ namespace Engine
     }
 
     template <typename T>
-    M66 rot(T &&E)
+    inline M66 rot(T &&E)
     {
         return M66{E[0], E[1], E[2], 0, 0, 0,
                    E[3], E[4], E[5], 0, 0, 0,
@@ -36,7 +36,7 @@ namespace Engine
     }
 
     template <typename T>
-    M66 xlt(T &&t)
+    inline M66 xlt(T &&t)
     {
         return M66{1, 0, 0, 0, 0, 0,
                    0, 1, 0, 0, 0, 0,
