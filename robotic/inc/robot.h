@@ -54,7 +54,6 @@ namespace Engine
         std::vector<Joint *> jo;
         std::vector<double> tau;
         std::mutex tau_lock;
-        Timer timer;
         std::thread daemon;
         bool daemon_running = true;
 
@@ -88,12 +87,17 @@ namespace Engine
             using namespace chrono;
             while (daemon_running)
             {
+                // using namespace std;
+                // using namespace chrono;
+                // auto start = system_clock::now();
+                 this->FD(this->tau);
+                // auto end = system_clock::now();
+                // auto duration = duration_cast<microseconds>(end - start);
+                // cout << "花费了"
+                //      << double(duration.count()) * microseconds::period::num / microseconds::period::den
+                //      << "秒" << endl;
 
-                auto start = system_clock::now();
-                this->FD(this->tau);
-                auto end = system_clock::now();
-                auto duration = duration_cast<microseconds>(end - start);
-
+               
                 for (int i = 0; i < this->jo.size(); i++)
                     this->jo[i]->jtype->step(1e-6);
             }
@@ -104,7 +108,6 @@ namespace Engine
             this->tau = tau;
         }
         void summary() const;
-        std::vector<double> &friction(std::vector<double> &tau);
 
         ~Robot()
         {

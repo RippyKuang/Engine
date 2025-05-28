@@ -65,7 +65,7 @@ namespace Engine
                 Vector6d vi = Xip * v[this->lambda[i]] + vj;
                 Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
 
-                Vector6d fi = I * ai + crf(vi) * I * vi;
+                Vector6d fi = I * ai + crf(vi) * (I * vi);
                 X.emplace_back(Xip);
                 v.emplace_back(vi);
                 a.emplace_back(ai);
@@ -108,18 +108,18 @@ namespace Engine
             {
 
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
-
+                auto X_T = X[i + 1].T();
                 if (this->lambda[i] != 0)
-                    Ic[this->lambda[i] - 1] = Ic[this->lambda[i] - 1] + X[i + 1].T() * Ic[i] * X[i + 1];
+                    Ic[this->lambda[i] - 1] = Ic[this->lambda[i] - 1] + X_T * Ic[i] * X[i + 1];
                 auto Si = rjoint->get_motion_subspace();
                 auto F = Ic[i] * Si;
                 H.data[i * this->jo.size() + i] = DynamicMatrix<double>(Si.T() * F);
                 int j = i;
                 while (this->lambda[j] != 0)
                 {
-                    F = X[j + 1].T() * F;
+                    F = X_T * F;
                     j = this->lambda[j] - 1;
-                    H.data[i * this->jo.size() + j] = DynamicMatrix<double>(F.T() * Si);
+                    H.data[i * this->jo.size() + j] = DynamicMatrix<double>(F * Si);
                     H.data[j * this->jo.size() + i] = H.data[i * this->jo.size() + j].T();
                 }
             }

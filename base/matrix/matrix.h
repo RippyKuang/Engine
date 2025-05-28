@@ -164,7 +164,7 @@ namespace Engine
         }
         Matrix &operator=(const Matrix &b)
         {
-            if(this->data)
+            if (this->data)
                 free(this->data);
             this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
@@ -174,7 +174,7 @@ namespace Engine
         Matrix &operator=(Matrix &&b)
         {
 
-             if(this->data)
+            if (this->data)
                 free(this->data);
             this->data = b.data;
             b.data = nullptr;
@@ -195,7 +195,7 @@ namespace Engine
             return res;
         }
 
-        _Scalar &operator[](int i) const
+        inline _Scalar &operator[](int i) const
         {
             return this->data[i];
         }
@@ -290,4 +290,77 @@ namespace Engine
         Vector3d color;
         Point2i pos;
     };
+
+    inline Matrix<double, 6, 1> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 1> &b)
+    {
+        Matrix<double, 6, 1> res;
+        for (int m = 0; m < 6; m++)
+        {
+            int base = m * 6;
+            res[m] = a[base + 0] * b[0] +
+                     a[base + 1] * b[1] +
+                     a[base + 2] * b[2] +
+                     a[base + 3] * b[3] +
+                     a[base + 4] * b[4] +
+                     a[base + 5] * b[5];
+        }
+        return res;
+    }
+
+    inline Matrix<double,1,1> operator*(Matrix<double, 1, 6> &a, Matrix<double, 6, 1> &b)
+    {
+        return a[0] * b[0] +
+               a[1] * b[1] +
+               a[2] * b[2] +
+               a[3] * b[3] +
+               a[4] * b[4] +
+               a[5] * b[5];
+    }
+
+    inline Matrix<double,1,1> operator*(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
+    {
+        return a[0] * b[0] +
+               a[1] * b[1] +
+               a[2] * b[2] +
+               a[3] * b[3] +
+               a[4] * b[4] +
+               a[5] * b[5];
+    }
+
+    inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
+    {
+        return Matrix<double, 6, 1>{a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3], a[4] + b[4], a[5] + b[5]};
+    }
+
+    inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b)
+    {
+        b[0] += a[0];
+        b[1] += a[1];
+        b[2] += a[2];
+        b[3] += a[3];
+        b[4] += a[4];
+        b[5] += a[5];
+        return b;
+    }
+
+    inline Matrix<double, 6, 6> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 6> &b)
+    {
+        Matrix<double, 6, 6> res;
+
+        for (int i = 0; i < 6; ++i)
+        {
+            int ai0 = i * 6;
+            for (int j = 0; j < 6; ++j)
+            {
+                res[ai0 + j] = a[ai0 + 0] * b[0 * 6 + j] +
+                               a[ai0 + 1] * b[1 * 6 + j] +
+                               a[ai0 + 2] * b[2 * 6 + j] +
+                               a[ai0 + 3] * b[3 * 6 + j] +
+                               a[ai0 + 4] * b[4 * 6 + j] +
+                               a[ai0 + 5] * b[5 * 6 + j];
+            }
+        }
+
+        return res;
+    }
 }

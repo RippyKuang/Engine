@@ -43,7 +43,7 @@ namespace Engine
         void jcalc(M66 &X, Vector6d &vj) override
         {
        
-            X = rot(this->fE(q)) * xlt(Vector3d{0, 0, 0});
+            X = rot(this->fE(q));
             vj = this->motion_subspace * q_dot;
         }
 
