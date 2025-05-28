@@ -76,10 +76,7 @@ namespace Engine
                 this->lambda.emplace_back(std::min(this->p[i], this->s[i]));
                 this->tau.emplace_back(0.0);
             }
-            // timer.add([this]
-            //           {
-            //             for(int i = 0; i < this->jo.size(); i++)
-            //                 this->jo[i]->jtype->step(1*1e-6); }, 1 _us);
+
             daemon = std::thread(&Robot::daemon_run, this);
         }
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v) const;
@@ -87,23 +84,27 @@ namespace Engine
         void FD(std::vector<double> &tau) const;
         void daemon_run()
         {
+            using namespace std;
+            using namespace chrono;
             while (daemon_running)
             {
-                {
-                    std::lock_guard<std::mutex> lock(tau_lock);
-                    this->FD(this->tau);
-                }
+
+                auto start = system_clock::now();
+                this->FD(this->tau);
+                auto end = system_clock::now();
+                auto duration = duration_cast<microseconds>(end - start);
+
                 for (int i = 0; i < this->jo.size(); i++)
-                    this->jo[i]->jtype->step(1 * 1e-5);
-                //    std::this_thread::sleep_for(std::chrono::microseconds(1));
+                    this->jo[i]->jtype->step(1e-6);
             }
         }
+
         void set_tau(const std::vector<double> &tau)
         {
-            std::lock_guard<std::mutex> lock(tau_lock);
             this->tau = tau;
         }
         void summary() const;
+        std::vector<double> &friction(std::vector<double> &tau);
 
         ~Robot()
         {

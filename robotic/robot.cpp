@@ -48,7 +48,7 @@ namespace Engine
         std::vector<Vector6d> f;
         v.emplace_back(Vector6d());
         X.emplace_back(EYE(6));
-        a.emplace_back(Vector6d({0, 0, 0, 0, 0, -9.81}));
+        a.emplace_back(Vector6d({0, 0, 0, 0, 0, 9.81}));
         for (int i = 0; i < this->bo.size() - 1; i++)
         {
             M66 Xj;
@@ -59,11 +59,12 @@ namespace Engine
             {
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
                 rjoint->jcalc(Xj, vj);
-                M66 I = Xj.T() * bo[i + 1]->get_inertia() * Xj;
+                M66 I = bo[i + 1]->get_inertia();
                 M66 Xip = Xj * jo[i]->parent2joint;
 
                 Vector6d vi = Xip * v[this->lambda[i]] + vj;
                 Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
+
                 Vector6d fi = I * ai + crf(vi) * I * vi;
                 X.emplace_back(Xip);
                 v.emplace_back(vi);
@@ -96,11 +97,7 @@ namespace Engine
         std::vector<M66> Ic;
         for (int i = 1; i < this->bo.size(); i++)
         {
-            BaseJoint *joint = jo[i - 1]->jtype;
-            M66 Xj;
-            Vector6d vj;
-            joint->jcalc(Xj, vj);
-            Ic.emplace_back(Xj.T() * this->bo[i]->get_inertia() * Xj);
+            Ic.emplace_back(this->bo[i]->get_inertia());
         }
         for (int i = bo.size() - 2; i >= 0; i--)
         {
@@ -131,7 +128,7 @@ namespace Engine
         DynamicMatrix<double> b(this->jo.size(), 1);
         for (int i = 0; i < this->jo.size(); i++)
         {
-            b.data[i] = tau[i] - C[i];
+            b.data[this->jo.size() - 1 - i] = tau[i] - C[i];
         }
         DynamicMatrix<double> x(this->jo.size(), 1);
         solve(H.dense(), std::move(b), x);
@@ -139,7 +136,7 @@ namespace Engine
         {
             auto joint = reinterpret_cast<Revolute *>(this->jo[i]->jtype);
             joint->set_v_dot(x.data[i]);
-            std::cout << "Joint " << i << " v_dot: " << x.data[i] << " C:" << C[i] << std::endl;
         }
     }
+
 }

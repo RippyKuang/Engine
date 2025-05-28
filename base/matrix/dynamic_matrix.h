@@ -100,6 +100,7 @@ namespace Engine
                     new_data[i * cols + j] = this->at(i, j);
 
             DynamicMatrix<Type> dense_matrix(size[0], size[1]);
+            free(dense_matrix.data); 
             dense_matrix.data = new_data;
             return std::move(dense_matrix);
         }
@@ -197,6 +198,11 @@ namespace Engine
         {
             free(data);
         }
+
+        ~DynamicMatrix()
+        {
+            this->custom_free();
+        }
     };
 
     inline void solve(DynamicMatrix<double> A, DynamicMatrix<double> b, DynamicMatrix<double> &x)
@@ -239,7 +245,6 @@ namespace Engine
             y.data[i] = (b.at(i, 0) - sum) / L.at(i, i);
         }
 
-        x = DynamicMatrix<double>(n, 1);
         for (int i = n - 1; i >= 0; --i)
         {
             double sum = 0.0;

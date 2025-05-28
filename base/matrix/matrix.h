@@ -164,7 +164,8 @@ namespace Engine
         }
         Matrix &operator=(const Matrix &b)
         {
-
+            if(this->data)
+                free(this->data);
             this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 this->data[i] = b[i];
@@ -173,6 +174,8 @@ namespace Engine
         Matrix &operator=(Matrix &&b)
         {
 
+             if(this->data)
+                free(this->data);
             this->data = b.data;
             b.data = nullptr;
             return *this;

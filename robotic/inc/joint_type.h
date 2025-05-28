@@ -28,6 +28,7 @@ namespace Engine
         Matrix<double, 6, 5> constraint_subspace;
         Vector3d axis;
         _R (*fE)(double);
+
         double q = 0;
         double q_dot = 0;
         double v_dot = 0;
@@ -53,8 +54,11 @@ namespace Engine
 
         void set_v_dot(double v_dot)
         {
-        
             this->v_dot = v_dot;
+        }
+        double get_q_dot()
+        {
+            return this->q_dot;
         }
 
         void step(double dt) override

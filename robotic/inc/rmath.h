@@ -8,19 +8,19 @@ namespace Engine
     inline _R rx(double theta)
     {
         return _R{1, 0, 0,
-                  0, std::cos(theta), -std::sin(theta),
-                  0, std::sin(theta), std::cos(theta)};
+                  0, std::cos(theta), std::sin(theta),
+                  0, -std::sin(theta), std::cos(theta)};
     }
     inline _R ry(double theta)
     {
-        return _R{std::cos(theta), 0, std::sin(theta),
+        return _R{std::cos(theta), 0, -std::sin(theta),
                   0, 1, 0,
-                  -std::sin(theta), 0, std::cos(theta)};
+                  std::sin(theta), 0, std::cos(theta)};
     }
     inline _R rz(double theta)
     {
-        return _R{std::cos(theta), -std::sin(theta), 0,
-                  std::sin(theta), std::cos(theta), 0,
+        return _R{std::cos(theta), std::sin(theta), 0,
+                  -std::sin(theta), std::cos(theta), 0,
                   0, 0, 1};
     }
 

@@ -14,12 +14,13 @@ using namespace Engine;
 
 int main(int argc, char *argv[])
 {
+   
     const int ww = 1280;
     const int hh = 1024;
     Engine::GFrame frame(argc, argv, ww, hh);
     Cube base_link(Vector3d{0.05, 0.05, 0.2});
     Cube link0(Vector3d{0.05, 0.2, 0.05}, Vector3d{0, 0, 0}, Vector3d{0, -0.1 + 0.025, 0});
-    Cube link1(Vector3d{0.05, 0.2, 0.05}, Vector3d{0, 0, 0}, Vector3d{0, -0.1, 0});
+    Cube link1(Vector3d{0.05, 0.2, 0.05}, Vector3d{0, 0, 0}, Vector3d{0, -0.1 + 0.025, 0});
 
     base_link.set_name("base_link");
     link0.set_name("link0");
@@ -39,10 +40,11 @@ int main(int argc, char *argv[])
     {
         std::vector<Point2i> frame_projs;
         // std::vector<double> tau;
-        // std::vector<double> v_dot{0,0};
+        // std::vector<double> v_dot{1,1};
         // std::vector<M66> X;
         // robot->ID(tau, v_dot, X);
         // robot->set_tau(tau);
+    
         std::vector<pixel> projs;
         auto promise = w.project();
         usleep(50000);
