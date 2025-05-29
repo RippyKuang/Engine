@@ -57,6 +57,13 @@ namespace Engine
         std::thread daemon;
         bool daemon_running = true;
 
+        std::vector<Vector6d> v;
+        std::vector<Vector6d> a;
+        std::vector<Vector6d> f;
+
+        std::vector<M66> X;
+        std::vector<M66> Ic;
+
     protected:
         std::vector<Link *> bo;
 
@@ -76,6 +83,13 @@ namespace Engine
                 this->tau.emplace_back(0.0);
             }
 
+            v.reserve(this->bo.size());
+            a.reserve(this->bo.size());
+            X.reserve(this->bo.size());
+            f.reserve(this->bo.size()-1);
+            Ic.reserve(this->bo.size()-1);
+
+
             daemon = std::thread(&Robot::daemon_run, this);
         }
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v);
@@ -85,9 +99,20 @@ namespace Engine
         {
             using namespace std;
             using namespace chrono;
+            double total_time = 0;
+            size_t cnt = 0;
             while (daemon_running)
             {
-                 this->FD(this->tau);               
+                auto start = system_clock::now();
+                this->FD(this->tau);
+                auto end = system_clock::now();
+                auto duration = duration_cast<microseconds>(end - start);
+                total_time += double(duration.count()) * microseconds::period::num / microseconds::period::den;
+                cnt += 1;
+                cout << "平均花费了"
+                     << total_time / cnt
+                     << "秒" << endl;
+
                 for (int i = 0; i < this->jo.size(); i++)
                     this->jo[i]->jtype->step(1e-6);
             }

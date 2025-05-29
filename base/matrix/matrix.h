@@ -109,7 +109,7 @@ namespace Engine
                 for (int c = 0; c < _Rows; c++)
                     m[r * _Rows + c] = this->data[c * _Cols + r];
 
-            return std::move(m);
+            return m;
         }
 
         Matrix operator+(const Matrix &b)
@@ -118,6 +118,12 @@ namespace Engine
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] + b[x];
             return m;
+        }
+
+        void operator+=(const Matrix &b)
+        {
+            for (int x = 0; x < _Rows * _Cols; x++)
+                this->data[x] += b[x];
         }
 
         Matrix operator-(const Matrix &b)
@@ -162,23 +168,20 @@ namespace Engine
                 m[x] = this->data[x] - b;
             return m;
         }
-        Matrix &operator=(const Matrix &b)
+        void operator=(const Matrix &b)
         {
             if (this->data)
                 free(this->data);
             this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 this->data[i] = b[i];
-            return *this;
         }
-        Matrix &operator=(Matrix &&b)
+        void operator=(Matrix &&b)
         {
-
             if (this->data)
                 free(this->data);
             this->data = b.data;
             b.data = nullptr;
-            return *this;
         }
         template <typename T1, int _bRow, int _bCol>
         Matrix<T1, _Rows, _bCol> operator*(const Matrix<T1, _bRow, _bCol> &b)
@@ -191,6 +194,21 @@ namespace Engine
                     res[m * _bCol + s] = 0;
                     for (int n = 0; n < _bRow; n++)
                         res[m * _bCol + s] += this->data[m * _Cols + n] * b[n * _bCol + s];
+                }
+            return res;
+        }
+
+        template <typename T1, int _bRow, int _bCol>
+        Matrix<T1, _Rows, _bCol> operator^(const Matrix<T1, _bRow, _bCol> &b)
+        {
+            assert(_Rows == _bRow);
+            Matrix<T1, _Cols, _bCol> res;
+            for (int m = 0; m < _Cols; m++)
+                for (int s = 0; s < _bCol; s++)
+                {
+                    res[m * _bCol + s] = 0;
+                    for (int n = 0; n < _bRow; n++)
+                        res[m * _bCol + s] += this->data[n * _Cols + m] * b[n * _bCol + s];
                 }
             return res;
         }
@@ -246,7 +264,7 @@ namespace Engine
     template <typename T>
     Matrix<T, 3, 1> cross(const Matrix<T, 3, 1> &a, const Matrix<T, 3, 1> &b)
     {
-        return Matrix<T, 3, 1>{a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
+        return {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]};
     }
 
     template <typename T>
@@ -307,7 +325,7 @@ namespace Engine
         return res;
     }
 
-    inline Matrix<double,1,1> operator*(Matrix<double, 1, 6> &a, Matrix<double, 6, 1> &b)
+    inline Matrix<double, 1, 1> operator*(Matrix<double, 1, 6> &a, Matrix<double, 6, 1> &b)
     {
         return a[0] * b[0] +
                a[1] * b[1] +
@@ -317,7 +335,7 @@ namespace Engine
                a[5] * b[5];
     }
 
-    inline Matrix<double,1,1> operator*(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
+    inline Matrix<double, 1, 1> operator*(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
     {
         return a[0] * b[0] +
                a[1] * b[1] +
@@ -329,7 +347,7 @@ namespace Engine
 
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
     {
-        return Matrix<double, 6, 1>{a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3], a[4] + b[4], a[5] + b[5]};
+        return {a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3], a[4] + b[4], a[5] + b[5]};
     }
 
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b)
@@ -343,7 +361,7 @@ namespace Engine
         return b;
     }
 
-    inline Matrix<double, 6, 6> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 6> &b)
+    inline Matrix<double, 6, 6> operator*(const Matrix<double, 6, 6> &a, const Matrix<double, 6, 6> &b)
     {
         Matrix<double, 6, 6> res;
 
@@ -363,4 +381,38 @@ namespace Engine
 
         return res;
     }
+
+    inline Matrix<double, 3, 3> operator%(const Matrix<double, 3, 3> &a, const Matrix<double, 3, 1> &b)
+    {
+        double b0 = b[0];
+        double b1 = b[1];
+        double b2 = b[2];
+        return {
+            a[1] * b2 - a[2] * b1,
+            -a[0] * b2 + a[2] * b0,
+            a[0] * b1 - a[1] * b0,
+            a[4] * b2 - a[5] * b1,
+            -a[3] * b2 + a[5] * b0,
+            a[3] * b1 - a[4] * b0,
+            a[7] * b2 - a[8] * b1,
+            -a[6] * b2 + a[8] * b0,
+            a[6] * b1 - a[7] * b0,
+        };
+    }
+
+    inline Matrix<double, 3, 3> operator%(const Matrix<double, 3, 1> &a, const Matrix<double, 3, 1> &b)
+    {
+        double x22 = -a[2] * b[2];
+        double x21 = a[2] * b[1];
+        double x20 = a[2] * b[0];
+        double x11 = -a[1] * b[1];
+        double x10 = a[1] * b[0];
+        double x00 = -a[0] * b[0];
+
+        return {
+            x22 + x11, x10, x20,
+            x10, x22 + x00, x21,
+            x20, x21, x11 + x00};
+    }
+
 }

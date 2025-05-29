@@ -97,6 +97,17 @@
         "fstream": "cpp",
         "iomanip": "cpp",
         "sstream": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "cassert": "cpp",
+        "cfloat": "cpp",
+        "climits": "cpp",
+        "__pragma_pop": "cpp",
+        "__pragma_push": "cpp",
+        "__errc": "cpp",
+        "__undef_macros": "cpp",
+        "cerrno": "cpp",
+        "version": "cpp",
+        "__preprocessor": "cpp",
+        "__target_macros": "cpp"
     }
 }

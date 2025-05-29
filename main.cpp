@@ -14,7 +14,6 @@ using namespace Engine;
 
 int main(int argc, char *argv[])
 {
-   
     const int ww = 1280;
     const int hh = 1024;
     Engine::GFrame frame(argc, argv, ww, hh);
@@ -32,24 +31,17 @@ int main(int argc, char *argv[])
     Part j0(base_link, link0, Vector3d{0, 0, 0.2 / 2 - 0.025}, new Revolute(AXIS_X));
     Part j1(link0, link1, Vector3d{0, -0.2, 0}, new Revolute(AXIS_X));
 
-    Robot *robot = w.parse_robot({j0,j1});
+    Robot *robot = w.parse_robot({j0, j1});
     frame.show(w.get_camera_handle());
     robot->summary();
-    robot->set_tau({0,0});
+    robot->set_tau({0, 0});
     while (1)
     {
-        std::vector<Point2i> frame_projs;
-        // std::vector<double> tau;
-        // std::vector<double> v_dot{0,1};
-        // std::vector<M66> X;
-        // robot->ID(tau, v_dot, X);
-        // robot->set_tau(tau);
-    
+
         std::vector<pixel> projs;
         auto promise = w.project();
         usleep(50000);
         frame.updateFuture(std::move(promise));
     }
     return 0;
-
 }
