@@ -7,20 +7,26 @@ namespace Engine
     using M66 = Matrix<double, 6, 6>;
     inline _R rx(double theta)
     {
+        const double c = std::cos(theta);
+        const double s = std::sin(theta);
         return {1, 0, 0,
-                0, std::cos(theta), std::sin(theta),
-                0, -std::sin(theta), std::cos(theta)};
+                0, c, s,
+                0, -s, c};
     }
     inline _R ry(double theta)
     {
-        return {std::cos(theta), 0, -std::sin(theta),
+        const double c = std::cos(theta);
+        const double s = std::sin(theta);
+        return {c, 0, -s,
                 0, 1, 0,
-                std::sin(theta), 0, std::cos(theta)};
+                s, 0, c};
     }
     inline _R rz(double theta)
     {
-        return {std::cos(theta), std::sin(theta), 0,
-                -std::sin(theta), std::cos(theta), 0,
+        const double c = std::cos(theta);
+        const double s = std::sin(theta);
+        return {c, s, 0,
+                -s, c, 0,
                 0, 0, 1};
     }
 
@@ -48,38 +54,26 @@ namespace Engine
 
     inline M66 rot_mul_xlt(const M66 &E, const M66 &t)
     {
-        double e0 = E[0];
-        double e1 = E[1];
-        double e2 = E[2];
-        double e3 = E[6];
-        double e4 = E[7];
-        double e5 = E[8];
-        double e6 = E[12];
-        double e7 = E[13];
-        double e8 = E[14];
+        const double e0 = E[0];
+        const double e1 = E[1];
+        const double e2 = E[2];
+        const double e3 = E[6];
+        const double e4 = E[7];
+        const double e5 = E[8];
+        const double e6 = E[12];
+        const double e7 = E[13];
+        const double e8 = E[14];
 
-        double t0 = t[26];
-        double t1 = t[30];
-        double t2 = t[19];
-
-        double a11 = -e1 * t2 + e2 * t1;
-        double a12 = e0 * t2 - e2 * t0;
-        double a13 = -e0 * t1 + e1 * t0;
-
-        double a21 = -e4 * t2 + e5 * t1;
-        double a22 = e3 * t2 - e5 * t0;
-        double a23 = -e3 * t1 + e4 * t0;
-
-        double a31 = -e7 * t2 + e8 * t1;
-        double a32 = e6 * t2 - e8 * t0;
-        double a33 = -e6 * t1 + e7 * t0;
+        const double t0 = t[26];
+        const double t1 = t[30];
+        const double t2 = t[19];
 
         return {e0, e1, e2, 0, 0, 0,
                 e3, e4, e5, 0, 0, 0,
                 e6, e7, e8, 0, 0, 0,
-                a11, a12, a13, e0, e1, e2,
-                a21, a22, a23, e3, e4, e5,
-                a31, a32, a33, e6, e7, e8};
+                -e1 * t2 + e2 * t1, e0 * t2 - e2 * t0, -e0 * t1 + e1 * t0, e0, e1, e2,
+                -e4 * t2 + e5 * t1, e3 * t2 - e5 * t0, -e3 * t1 + e4 * t0, e3, e4, e5,
+                -e7 * t2 + e8 * t1, e6 * t2 - e8 * t0, -e6 * t1 + e7 * t0, e6, e7, e8};
     }
 
     template <typename T>
@@ -111,12 +105,12 @@ namespace Engine
     inline Matrix<double, 6, 6> crm(T &&v)
     {
 
-        double v0 = v[0];
-        double v1 = v[1];
-        double v2 = v[2];
-        double v3 = v[3];
-        double v4 = v[4];
-        double v5 = v[5];
+        const double v0 = v[0];
+        const double v1 = v[1];
+        const double v2 = v[2];
+        const double v3 = v[3];
+        const double v4 = v[4];
+        const double v5 = v[5];
         return {0, -v2, v1, 0, 0, 0,
                 v2, 0, -v0, 0, 0, 0,
                 -v1, v0, 0, 0, 0, 0,
@@ -129,12 +123,12 @@ namespace Engine
     inline Matrix<double, 6, 6> crf(T &&v)
     {
 
-        double v0 = v[0];
-        double v1 = v[1];
-        double v2 = v[2];
-        double v3 = v[3];
-        double v4 = v[4];
-        double v5 = v[5];
+        const double v0 = v[0];
+        const double v1 = v[1];
+        const double v2 = v[2];
+        const double v3 = v[3];
+        const double v4 = v[4];
+        const double v5 = v[5];
 
         return {0, -v2, v1, 0, -v5, v4,
                 v2, 0, -v0, v5, 0, -v3,
@@ -150,14 +144,14 @@ namespace Engine
         _R X_E;
         Vector3d X_p;
         inv_plx(X, X_E, X_p);
-        _R I{Ic[0], Ic[1], Ic[2], Ic[6], Ic[7], Ic[8], Ic[12], Ic[13], Ic[14]};
-        Vector3d vh{Ic[16], Ic[5], Ic[9]};
-        double m = Ic[21];
-        Vector3d h = (X_E ^ vh) + X_p * m;
-        _R i = (X_E ^ I) * X_E - h % X_p - (X_p) % (X_E ^ vh);
-        double h0 = h[0];
-        double h1 = h[1];
-        double h2 = h[2];
+        const _R I{Ic[0], Ic[1], Ic[2], Ic[6], Ic[7], Ic[8], Ic[12], Ic[13], Ic[14]};
+        const Vector3d vh{Ic[16], Ic[5], Ic[9]};
+        const double m = Ic[21];
+        const Vector3d h = (X_E ^ vh) + X_p * m;
+        const _R i = (X_E ^ I) * X_E - h % X_p - (X_p) % (X_E ^ vh);
+        const double h0 = h[0];
+        const double h1 = h[1];
+        const double h2 = h[2];
         return {
             i[0], i[1], i[2], 0, -h2, h1,
             i[3], i[4], i[5], h2, 0, -h0,

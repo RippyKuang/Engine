@@ -5,6 +5,7 @@
 #include <initializer_list>
 #include <cstring>
 #include <vector>
+#include <immintrin.h>
 
 #define EYE(x) Engine::eye<double, x>()
 #define AXIS_X Vector3d{1, 0, 0}
@@ -22,6 +23,7 @@ namespace Engine
         _Scalar *data;
 
     public:
+        friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b);
         Matrix(_Scalar *p) : data(p)
         {
         }
@@ -314,7 +316,7 @@ namespace Engine
         Matrix<double, 6, 1> res;
         for (int m = 0; m < 6; m++)
         {
-            int base = m * 6;
+            const int base = m * 6;
             res[m] = a[base + 0] * b[0] +
                      a[base + 1] * b[1] +
                      a[base + 2] * b[2] +
@@ -352,12 +354,19 @@ namespace Engine
 
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b)
     {
-        b[0] += a[0];
-        b[1] += a[1];
-        b[2] += a[2];
-        b[3] += a[3];
-        b[4] += a[4];
-        b[5] += a[5];
+
+        double *pa = a.data;
+        double *pb = b.data;
+
+        const __m256d va0 = _mm256_loadu_pd(pa);
+        const __m256d vb0 = _mm256_loadu_pd(pb); 
+
+        const __m256d vr0 = _mm256_add_pd(va0, vb0); 
+
+        _mm256_storeu_pd(pb, vr0);
+
+        pb[4] += pa[4];
+        pb[5] += pa[5];
         return b;
     }
 
@@ -367,7 +376,7 @@ namespace Engine
 
         for (int i = 0; i < 6; ++i)
         {
-            int ai0 = i * 6;
+            const int ai0 = i * 6;
             for (int j = 0; j < 6; ++j)
             {
                 res[ai0 + j] = a[ai0 + 0] * b[0 * 6 + j] +
@@ -384,9 +393,9 @@ namespace Engine
 
     inline Matrix<double, 3, 3> operator%(const Matrix<double, 3, 3> &a, const Matrix<double, 3, 1> &b)
     {
-        double b0 = b[0];
-        double b1 = b[1];
-        double b2 = b[2];
+        const double b0 = b[0];
+        const double b1 = b[1];
+        const double b2 = b[2];
         return {
             a[1] * b2 - a[2] * b1,
             -a[0] * b2 + a[2] * b0,
@@ -402,12 +411,12 @@ namespace Engine
 
     inline Matrix<double, 3, 3> operator%(const Matrix<double, 3, 1> &a, const Matrix<double, 3, 1> &b)
     {
-        double x22 = -a[2] * b[2];
-        double x21 = a[2] * b[1];
-        double x20 = a[2] * b[0];
-        double x11 = -a[1] * b[1];
-        double x10 = a[1] * b[0];
-        double x00 = -a[0] * b[0];
+        const double x22 = -a[2] * b[2];
+        const double x21 = a[2] * b[1];
+        const double x20 = a[2] * b[0];
+        const double x11 = -a[1] * b[1];
+        const double x10 = a[1] * b[0];
+        const double x00 = -a[0] * b[0];
 
         return {
             x22 + x11, x10, x20,
