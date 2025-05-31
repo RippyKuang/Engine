@@ -24,19 +24,20 @@ namespace Engine
 
     public:
         friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b);
+        friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b);
         Matrix(_Scalar *p) : data(p)
         {
         }
         Matrix(_Scalar val = 0)
         {
-            data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
+            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = val;
         }
 
         Matrix(const Matrix<_Scalar, _Rows, _Cols> &m)
         {
-            data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
+            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4)* sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = m[i];
         }
@@ -53,7 +54,7 @@ namespace Engine
 
             if (_mRow * _mCol == 0)
                 return;
-            data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
+            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
             if (_Rows * _Cols >= _mCol * _mRow)
             {
                 for (int i = 0; i < _mCol * _mRow; i++)
@@ -74,7 +75,7 @@ namespace Engine
         Matrix(std::initializer_list<_Scalar> values)
         {
             assert(values.size() == _Rows * _Cols);
-            this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
+            this->data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
             auto it = values.begin();
             for (int i = 0; i < _Rows * _Cols; i++, it++)
                 this->data[i] = *it;
@@ -94,7 +95,7 @@ namespace Engine
         template <typename... Args>
         Matrix(const _Scalar &t, const Args &...rest)
         {
-            this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof...(rest) * sizeof(_Scalar));
+            this->data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof...(rest) * sizeof(_Scalar));
             this->data[0] = t;
             _impl_args(1, rest...);
         }
@@ -174,7 +175,7 @@ namespace Engine
         {
             if (this->data)
                 free(this->data);
-            this->data = (_Scalar *)malloc(_Rows * _Cols * sizeof(_Scalar));
+            this->data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 this->data[i] = b[i];
         }
@@ -208,9 +209,10 @@ namespace Engine
             for (int m = 0; m < _Cols; m++)
                 for (int s = 0; s < _bCol; s++)
                 {
-                    res[m * _bCol + s] = 0;
+                    T1 &x = res[m * _bCol + s];
+                    x = 0;
                     for (int n = 0; n < _bRow; n++)
-                        res[m * _bCol + s] += this->data[n * _Cols + m] * b[n * _bCol + s];
+                        x += this->data[n * _Cols + m] * b[n * _bCol + s];
                 }
             return res;
         }
@@ -349,7 +351,25 @@ namespace Engine
 
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
     {
-        return {a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3], a[4] + b[4], a[5] + b[5]};
+        double *ps = (double*)malloc(8*sizeof(double));
+        const double *pa = a.data;
+        const double *pb = b.data;
+
+        __m256d va0 = _mm256_loadu_pd(pa);
+        __m256d vb0 = _mm256_loadu_pd(pb);
+
+        __m256d vr0 = _mm256_add_pd(va0, vb0);
+
+        _mm256_storeu_pd(ps, vr0);
+
+        va0 = _mm256_loadu_pd(pa+4);
+        vb0 = _mm256_loadu_pd(pb+4);
+
+        vr0 = _mm256_add_pd(va0, vb0);
+
+        _mm256_storeu_pd(ps+4, vr0);
+
+        return ps;
     }
 
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b)
@@ -358,15 +378,20 @@ namespace Engine
         double *pa = a.data;
         double *pb = b.data;
 
-        const __m256d va0 = _mm256_loadu_pd(pa);
-        const __m256d vb0 = _mm256_loadu_pd(pb); 
+        __m256d va0 = _mm256_loadu_pd(pa);
+        __m256d vb0 = _mm256_loadu_pd(pb);
 
-        const __m256d vr0 = _mm256_add_pd(va0, vb0); 
+        __m256d vr0 = _mm256_add_pd(va0, vb0);
 
         _mm256_storeu_pd(pb, vr0);
 
-        pb[4] += pa[4];
-        pb[5] += pa[5];
+        va0 = _mm256_loadu_pd(pa+4);
+        vb0 = _mm256_loadu_pd(pb+4);
+
+        vr0 = _mm256_add_pd(va0, vb0);
+
+        _mm256_storeu_pd(pb+4, vr0);
+
         return b;
     }
 

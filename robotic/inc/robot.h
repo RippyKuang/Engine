@@ -99,18 +99,16 @@ namespace Engine
         {
             using namespace std;
             using namespace chrono;
-            double total_time = 0;
-            size_t cnt = 0;
+
             while (daemon_running)
             {
                 auto start = system_clock::now();
                 this->FD(this->tau);
                 auto end = system_clock::now();
                 auto duration = duration_cast<microseconds>(end - start);
-                total_time += double(duration.count()) * microseconds::period::num / microseconds::period::den;
-                cnt += 1;
-                cout << "平均花费了"
-                     << total_time / cnt
+                
+                cout << "花费了"
+                     << double(duration.count()) * microseconds::period::num / microseconds::period::den
                      << "秒" << endl;
 
                 for (int i = 0; i < this->jo.size(); i++)
