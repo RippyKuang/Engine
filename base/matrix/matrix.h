@@ -25,6 +25,7 @@ namespace Engine
     public:
         friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b);
         friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b);
+        friend inline Matrix<double, 6, 1> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 1> &b);
         Matrix(_Scalar *p) : data(p)
         {
         }
@@ -37,7 +38,7 @@ namespace Engine
 
         Matrix(const Matrix<_Scalar, _Rows, _Cols> &m)
         {
-            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4)* sizeof(_Scalar));
+            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = m[i];
         }
@@ -316,15 +317,23 @@ namespace Engine
     inline Matrix<double, 6, 1> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 1> &b)
     {
         Matrix<double, 6, 1> res;
+        const double* pa = a.data;
+        const double* pb = b.data;
+        const double &b0 = pb[0];
+        const double &b1 = pb[1];
+        const double &b2 = pb[2];
+        const double &b3 = pb[3];
+        const double &b4 = pb[4];
+        const double &b5 = pb[5];
         for (int m = 0; m < 6; m++)
         {
             const int base = m * 6;
-            res[m] = a[base + 0] * b[0] +
-                     a[base + 1] * b[1] +
-                     a[base + 2] * b[2] +
-                     a[base + 3] * b[3] +
-                     a[base + 4] * b[4] +
-                     a[base + 5] * b[5];
+            res[m] = pa[base + 0] * b0 +
+                     pa[base + 1] * b1 +
+                     pa[base + 2] * b2 +
+                     pa[base + 3] * b3 +
+                     pa[base + 4] * b4 +
+                     pa[base + 5] * b5;
         }
         return res;
     }
@@ -351,7 +360,7 @@ namespace Engine
 
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
     {
-        double *ps = (double*)malloc(8*sizeof(double));
+        double *ps = (double *)malloc(8 * sizeof(double));
         const double *pa = a.data;
         const double *pb = b.data;
 
@@ -362,12 +371,12 @@ namespace Engine
 
         _mm256_storeu_pd(ps, vr0);
 
-        va0 = _mm256_loadu_pd(pa+4);
-        vb0 = _mm256_loadu_pd(pb+4);
+        va0 = _mm256_loadu_pd(pa + 4);
+        vb0 = _mm256_loadu_pd(pb + 4);
 
         vr0 = _mm256_add_pd(va0, vb0);
 
-        _mm256_storeu_pd(ps+4, vr0);
+        _mm256_storeu_pd(ps + 4, vr0);
 
         return ps;
     }
@@ -385,12 +394,12 @@ namespace Engine
 
         _mm256_storeu_pd(pb, vr0);
 
-        va0 = _mm256_loadu_pd(pa+4);
-        vb0 = _mm256_loadu_pd(pb+4);
+        va0 = _mm256_loadu_pd(pa + 4);
+        vb0 = _mm256_loadu_pd(pb + 4);
 
         vr0 = _mm256_add_pd(va0, vb0);
 
-        _mm256_storeu_pd(pb+4, vr0);
+        _mm256_storeu_pd(pb + 4, vr0);
 
         return b;
     }
@@ -398,7 +407,7 @@ namespace Engine
     inline Matrix<double, 6, 6> operator*(const Matrix<double, 6, 6> &a, const Matrix<double, 6, 6> &b)
     {
         Matrix<double, 6, 6> res;
-
+        std::cout<<"hhhhhh";
         for (int i = 0; i < 6; ++i)
         {
             const int ai0 = i * 6;

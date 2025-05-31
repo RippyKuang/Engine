@@ -102,14 +102,14 @@ namespace Engine
 
             while (daemon_running)
             {
-                auto start = system_clock::now();
+                //auto start = system_clock::now();
                 this->FD(this->tau);
-                auto end = system_clock::now();
-                auto duration = duration_cast<microseconds>(end - start);
+                // auto end = system_clock::now();
+                // auto duration = duration_cast<microseconds>(end - start);
                 
-                cout << "花费了"
-                     << double(duration.count()) * microseconds::period::num / microseconds::period::den
-                     << "秒" << endl;
+                // cout << "花费了"
+                //      << double(duration.count()) * microseconds::period::num / microseconds::period::den
+                //      << "秒" << endl;
 
                 for (int i = 0; i < this->jo.size(); i++)
                     this->jo[i]->jtype->step(1e-6);
