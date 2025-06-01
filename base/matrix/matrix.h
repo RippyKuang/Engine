@@ -31,14 +31,14 @@ namespace Engine
         }
         Matrix(_Scalar val = 0)
         {
-            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
+            data = (_Scalar *)malloc((_Rows * _Cols) * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = val;
         }
 
         Matrix(const Matrix<_Scalar, _Rows, _Cols> &m)
         {
-            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
+            data = (_Scalar *)malloc((_Rows * _Cols) * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 data[i] = m[i];
         }
@@ -55,7 +55,7 @@ namespace Engine
 
             if (_mRow * _mCol == 0)
                 return;
-            data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
+            data = (_Scalar *)malloc((_Rows * _Cols) * sizeof(_Scalar));
             if (_Rows * _Cols >= _mCol * _mRow)
             {
                 for (int i = 0; i < _mCol * _mRow; i++)
@@ -76,7 +76,7 @@ namespace Engine
         Matrix(std::initializer_list<_Scalar> values)
         {
             assert(values.size() == _Rows * _Cols);
-            this->data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
+            this->data = (_Scalar *)malloc((_Rows * _Cols) * sizeof(_Scalar));
             auto it = values.begin();
             for (int i = 0; i < _Rows * _Cols; i++, it++)
                 this->data[i] = *it;
@@ -96,7 +96,7 @@ namespace Engine
         template <typename... Args>
         Matrix(const _Scalar &t, const Args &...rest)
         {
-            this->data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof...(rest) * sizeof(_Scalar));
+            this->data = (_Scalar *)malloc((_Rows * _Cols) * sizeof...(rest) * sizeof(_Scalar));
             this->data[0] = t;
             _impl_args(1, rest...);
         }
@@ -116,7 +116,7 @@ namespace Engine
             return m;
         }
 
-        Matrix operator+(const Matrix &b)
+        Matrix operator+(const Matrix &b) const 
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
@@ -130,42 +130,42 @@ namespace Engine
                 this->data[x] += b[x];
         }
 
-        Matrix operator-(const Matrix &b)
+        Matrix operator-(const Matrix &b) const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] - b[x];
             return m;
         }
-        Matrix operator*(const _Scalar &b)
+        Matrix operator*(const _Scalar &b)const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] * b;
             return m;
         }
-        Matrix operator*(const _Scalar &&b)
+        Matrix operator*(const _Scalar &&b)const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] * b;
             return m;
         }
-        Matrix operator/(const _Scalar &b)
+        Matrix operator/(const _Scalar &b)const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] / b;
             return m;
         }
-        Matrix operator+(const _Scalar &b)
+        Matrix operator+(const _Scalar &b)const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] + b;
             return m;
         }
-        Matrix operator-(const _Scalar &b)
+        Matrix operator-(const _Scalar &b)const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
@@ -176,7 +176,7 @@ namespace Engine
         {
             if (this->data)
                 free(this->data);
-            this->data = (_Scalar *)malloc((_Rows * _Cols + _Rows * _Cols % 4) * sizeof(_Scalar));
+            this->data = (_Scalar *)malloc((_Rows * _Cols) * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 this->data[i] = b[i];
         }
@@ -203,7 +203,7 @@ namespace Engine
         }
 
         template <typename T1, int _bRow, int _bCol>
-        Matrix<T1, _Rows, _bCol> operator^(const Matrix<T1, _bRow, _bCol> &b)
+        Matrix<T1, _Rows, _bCol> operator^(const Matrix<T1, _bRow, _bCol> &b) const
         {
             assert(_Rows == _bRow);
             Matrix<T1, _Cols, _bCol> res;
@@ -317,14 +317,14 @@ namespace Engine
     inline Matrix<double, 6, 1> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 1> &b)
     {
         Matrix<double, 6, 1> res;
-        const double* pa = a.data;
-        const double* pb = b.data;
-        const double &b0 = pb[0];
-        const double &b1 = pb[1];
-        const double &b2 = pb[2];
-        const double &b3 = pb[3];
-        const double &b4 = pb[4];
-        const double &b5 = pb[5];
+        const double *pa = a.data;
+        const double *pb = b.data;
+        const double b0 = pb[0];
+        const double b1 = pb[1];
+        const double b2 = pb[2];
+        const double b3 = pb[3];
+        const double b4 = pb[4];
+        const double b5 = pb[5];
         for (int m = 0; m < 6; m++)
         {
             const int base = m * 6;
@@ -360,23 +360,16 @@ namespace Engine
 
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b)
     {
-        double *ps = (double *)malloc(8 * sizeof(double));
+        double *ps = (double *)malloc(6 * sizeof(double));
         const double *pa = a.data;
         const double *pb = b.data;
 
-        __m256d va0 = _mm256_loadu_pd(pa);
-        __m256d vb0 = _mm256_loadu_pd(pb);
-
-        __m256d vr0 = _mm256_add_pd(va0, vb0);
-
-        _mm256_storeu_pd(ps, vr0);
-
-        va0 = _mm256_loadu_pd(pa + 4);
-        vb0 = _mm256_loadu_pd(pb + 4);
-
-        vr0 = _mm256_add_pd(va0, vb0);
-
-        _mm256_storeu_pd(ps + 4, vr0);
+        ps[0] = pa[0] + pb[0];
+        ps[1] = pa[1] + pb[1];
+        ps[2] = pa[2] + pb[2];
+        ps[3] = pa[3] + pb[3];
+        ps[4] = pa[4] + pb[4];
+        ps[5] = pa[5] + pb[5];
 
         return ps;
     }
@@ -384,30 +377,20 @@ namespace Engine
     inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b)
     {
 
-        double *pa = a.data;
+        const double *pa = a.data;
         double *pb = b.data;
-
-        __m256d va0 = _mm256_loadu_pd(pa);
-        __m256d vb0 = _mm256_loadu_pd(pb);
-
-        __m256d vr0 = _mm256_add_pd(va0, vb0);
-
-        _mm256_storeu_pd(pb, vr0);
-
-        va0 = _mm256_loadu_pd(pa + 4);
-        vb0 = _mm256_loadu_pd(pb + 4);
-
-        vr0 = _mm256_add_pd(va0, vb0);
-
-        _mm256_storeu_pd(pb + 4, vr0);
-
+        pb[0] += pa[0];
+        pb[1] += pa[1];
+        pb[2] += pa[2];
+        pb[3] += pa[3];
+        pb[4] += pa[4];
+        pb[5] += pa[5];
         return b;
     }
 
     inline Matrix<double, 6, 6> operator*(const Matrix<double, 6, 6> &a, const Matrix<double, 6, 6> &b)
     {
         Matrix<double, 6, 6> res;
-        std::cout<<"hhhhhh";
         for (int i = 0; i < 6; ++i)
         {
             const int ai0 = i * 6;
@@ -456,6 +439,31 @@ namespace Engine
             x22 + x11, x10, x20,
             x10, x22 + x00, x21,
             x20, x21, x11 + x00};
+    }
+
+    inline Matrix<double, 3, 1> operator^(const Matrix<double, 3, 3> &a, const Matrix<double, 3, 1> &b)
+    {
+
+        double *ps = (double *)malloc(3 * sizeof(double));
+        const double b0 = b[0];
+        const double b1 = b[1];
+        const double b2 = b[2];
+
+        const double a0 = a[0];
+        const double a1 = a[1];
+        const double a2 = a[2];
+
+        const double a3 = a[3];
+        const double a4 = a[4];
+        const double a5 = a[5];
+
+        const double a6 = a[6];
+        const double a7 = a[7];
+        const double a8 = a[8];
+        ps[0] = a0 * b0 + a3 * b1 + a6 * b2;
+        ps[1] = a1 * b0 + a4 * b1 + a7 * b2;
+        ps[2] = a2 * b0 + a5 * b1 + a8 * b2;
+        return ps;
     }
 
 }

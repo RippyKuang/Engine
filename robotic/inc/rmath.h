@@ -147,8 +147,9 @@ namespace Engine
         const _R I{Ic[0], Ic[1], Ic[2], Ic[6], Ic[7], Ic[8], Ic[12], Ic[13], Ic[14]};
         const Vector3d vh{Ic[16], Ic[5], Ic[9]};
         const double m = Ic[21];
-        const Vector3d h = (X_E ^ vh) + X_p * m;
-        const _R i = (X_E ^ I) * X_E - h % X_p - (X_p) % (X_E ^ vh);
+        const Vector3d X_E_vh(X_E ^ vh);
+        const Vector3d h(X_E_vh + X_p * m);
+        const _R i((X_E ^ I) * X_E - h % X_p - (X_p) % X_E_vh);
         const double h0 = h[0];
         const double h1 = h[1];
         const double h2 = h[2];
