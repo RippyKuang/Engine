@@ -5,7 +5,6 @@
 #include <initializer_list>
 #include <cstring>
 #include <vector>
-#include <immintrin.h>
 
 #define EYE(x) Engine::eye<double, x>()
 #define AXIS_X Vector3d{1, 0, 0}
@@ -20,9 +19,9 @@ namespace Engine
     protected:
         const int row = _Rows;
         const int col = _Cols;
-        _Scalar *data;
-
+    
     public:
+        _Scalar *data;
         friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b);
         friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &b);
         friend inline Matrix<double, 6, 1> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 1> &b);
@@ -106,7 +105,7 @@ namespace Engine
             return std::tuple<int, int>(row, col);
         }
 
-        Matrix<_Scalar, _Cols, _Rows> T()
+        Matrix<_Scalar, _Cols, _Rows> T() const
         {
             Matrix<_Scalar, _Cols, _Rows> m;
             for (int r = 0; r < _Cols; r++)

@@ -9,7 +9,8 @@ namespace Engine
     enum JType
     {
         DEFAULT,
-        REVOLUTE
+        REVOLUTE,
+        PRISMATIC
     };
 
     struct BaseJoint
@@ -33,7 +34,6 @@ namespace Engine
         double q_dot = 0;
         double v_dot = 0;
 
-
     public:
         using space_type = Matrix<double, 6, 1>;
         JType get_type() override
@@ -42,7 +42,7 @@ namespace Engine
         }
         void jcalc(M66 &X, Vector6d &vj) override
         {
-       
+
             X = rot(this->fE(q));
             vj = this->motion_subspace * q_dot;
         }
@@ -63,15 +63,16 @@ namespace Engine
 
         void step(double dt) override
         {
-           
+
             q_dot += v_dot * dt;
             q += q_dot * dt;
             q = fmod(q, 2 * M_PI);
         }
+
         Revolute(Vector3d &&axis) : axis(axis)
         {
             this->type = REVOLUTE;
-            motion_subspace = Matrix<double, 1, 6>{axis[0], axis[1], axis[2], 0, 0, 0};
+            motion_subspace = Matrix<double, 6, 1>{axis[0], axis[1], axis[2], 0, 0, 0};
             if (axis[0] == 1)
             {
                 this->fE = rx;
@@ -99,6 +100,87 @@ namespace Engine
                                                            0, 1, 0, 0, 0,
                                                            0, 0, 0, 0, 0,
                                                            0, 0, 1, 0, 0,
+                                                           0, 0, 0, 1, 0,
+                                                           0, 0, 0, 0, 1};
+            }
+        }
+    };
+
+    class Prismatic : public BaseJoint
+    {
+    private:
+        Matrix<double, 6, 1> motion_subspace;
+        Matrix<double, 6, 5> constraint_subspace;
+        Vector3d axis;
+
+        double q = 0;
+        double q_dot = 0;
+        double v_dot = 0;
+
+    public:
+        using space_type = Matrix<double, 6, 1>;
+
+        JType get_type() override
+        {
+            return this->type;
+        }
+
+        Matrix<double, 6, 1> get_motion_subspace()
+        {
+            return this->motion_subspace;
+        }
+
+        void set_v_dot(double v_dot)
+        {
+            this->v_dot = v_dot;
+        }
+
+        double get_q_dot()
+        {
+            return this->q_dot;
+        }
+
+        void step(double dt) override
+        {
+            q_dot += v_dot * dt;
+            q += q_dot * dt;
+        }
+
+        void jcalc(M66 &X, Vector6d &vj) override
+        {
+
+            X = xlt(this->axis*q);
+            vj = this->motion_subspace * q_dot;
+        }
+        Prismatic(Vector3d &&axis) : axis(axis)
+        {
+            this->type = PRISMATIC;
+            motion_subspace = Matrix<double, 6, 1>{0, 0, 0, axis[0], axis[1], axis[2]};
+            if (axis[2] == 1)
+            {
+                constraint_subspace = Matrix<double, 6, 5>{1, 0, 0, 0, 0,
+                                                           0, 1, 0, 0, 0,
+                                                           0, 0, 1, 0, 0,
+                                                           0, 0, 0, 1, 0,
+                                                           0, 0, 0, 0, 1,
+                                                           0, 0, 0, 0, 0};
+            }
+            else if (axis[1] == 1)
+            {
+
+                constraint_subspace = Matrix<double, 6, 5>{1, 0, 0, 0, 0,
+                                                           0, 1, 0, 0, 0,
+                                                           0, 0, 1, 0, 0,
+                                                           0, 0, 0, 1, 0,
+                                                           0, 0, 0, 0, 0,
+                                                           0, 0, 0, 0, 1};
+            }
+            else
+            {
+                constraint_subspace = Matrix<double, 6, 5>{1, 0, 0, 0, 0,
+                                                           0, 1, 0, 0, 0,
+                                                           0, 0, 1, 0, 0,
+                                                           0, 0, 0, 0, 0,
                                                            0, 0, 0, 1, 0,
                                                            0, 0, 0, 0, 1};
             }

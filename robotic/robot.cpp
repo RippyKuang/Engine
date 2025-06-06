@@ -36,9 +36,8 @@ namespace Engine
             _R E;
             Vector3d p;
             inv_plx(Xi0, E, p);
-            T.emplace_back(getTransformMat(E.T(),p));
+            T.emplace_back(getTransformMat(E.T(), p));
             v.emplace_back(v[this->lambda[i]] + plx(E.T(), E * p * (-1)) * vj);
-
         }
     }
 
@@ -59,7 +58,7 @@ namespace Engine
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
                 rjoint->jcalc(Xj, vj);
                 M66 I = bo[i + 1]->get_inertia();
-                M66 Xip = rot_mul_xlt(Xj,jo[i]->parent2joint);
+                M66 Xip = rot_mul_xlt(Xj, jo[i]->parent2joint);
 
                 Vector6d vi = Xip * v[this->lambda[i]] + vj;
                 Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
@@ -68,7 +67,21 @@ namespace Engine
                 f.emplace_back(I * ai + crf(vi) * (I * vi));
                 v.emplace_back(std::move(vi));
                 a.emplace_back(std::move(ai));
-                
+            }
+            else if (joint->get_type() == JType::PRISMATIC)
+            {
+                Prismatic *rjoint = reinterpret_cast<Prismatic *>(joint);
+                rjoint->jcalc(Xj, vj);
+                M66 I = bo[i + 1]->get_inertia();
+                M66 Xip = Xj * jo[i]->parent2joint;
+
+                Vector6d vi = Xip * v[this->lambda[i]] + vj;
+                Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
+
+                X.emplace_back(std::move(Xip));
+                f.emplace_back(I * ai + crf(vi) * (I * vi));
+                v.emplace_back(std::move(vi));
+                a.emplace_back(std::move(ai));
             }
         }
 
@@ -81,7 +94,15 @@ namespace Engine
                 tau.emplace_back((rjoint->get_motion_subspace().T() * f[i])[0]);
 
                 if (this->lambda[i] != 0)
-                    f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1]^f[i]);
+                    f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1] ^ f[i]);
+            }
+            else if (joint->get_type() == JType::PRISMATIC)
+            {
+                Prismatic *rjoint = reinterpret_cast<Prismatic *>(joint);
+                tau.emplace_back((rjoint->get_motion_subspace().T() * f[i])[0]);
+
+                if (this->lambda[i] != 0)
+                    f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1] ^ f[i]);
             }
         }
         this->v.clear();
@@ -92,11 +113,11 @@ namespace Engine
     void Robot::FD(std::vector<double> &tau)
     {
         std::vector<double> C;
-        
+
         DynamicMatrix<DynamicMatrix<double>> H(this->jo.size(), this->jo.size());
         std::vector<double> zero(tau.size(), 0.0);
         this->ID(C, zero, X);
-        
+
         for (int i = 1; i < this->bo.size(); i++)
         {
             Ic.emplace_back(this->bo[i]->get_inertia());
@@ -110,18 +131,38 @@ namespace Engine
             {
 
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
-        
+
                 if (this->lambda[i] != 0)
                 {
                     Ic[this->lambda[i] - 1] += XTIX(X[i + 1], Ic[i]);
                 }
                 auto Si = rjoint->get_motion_subspace();
                 auto F = Ic[i] * Si;
-                H.data[i * this->jo.size() + i] = DynamicMatrix<double>(Si*F);
+                H.data[i * this->jo.size() + i] = DynamicMatrix<double>(Si * F);
                 int j = i;
                 while (this->lambda[j] != 0)
                 {
-                    F = X[i + 1]^F;
+                    F = X[i + 1] ^ F;
+                    j = this->lambda[j] - 1;
+                    H.data[i * this->jo.size() + j] = DynamicMatrix<double>(F * Si);
+                    H.data[j * this->jo.size() + i] = H.data[i * this->jo.size() + j].T();
+                }
+            }
+            else if (joint->get_type() == JType::PRISMATIC)
+            {
+                Prismatic *rjoint = reinterpret_cast<Prismatic *>(joint);
+
+                if (this->lambda[i] != 0)
+                {
+                    Ic[this->lambda[i] - 1] += XTIX(X[i + 1], Ic[i]);
+                }
+                auto Si = rjoint->get_motion_subspace();
+                auto F = Ic[i] * Si;
+                H.data[i * this->jo.size() + i] = DynamicMatrix<double>(Si * F);
+                int j = i;
+                while (this->lambda[j] != 0)
+                {
+                    F = X[i + 1] ^ F;
                     j = this->lambda[j] - 1;
                     H.data[i * this->jo.size() + j] = DynamicMatrix<double>(F * Si);
                     H.data[j * this->jo.size() + i] = H.data[i * this->jo.size() + j].T();
@@ -138,8 +179,16 @@ namespace Engine
         solve(H.dense(), std::move(b), x);
         for (int i = 0; i < this->jo.size(); i++)
         {
-            auto joint = reinterpret_cast<Revolute *>(this->jo[i]->jtype);
-            joint->set_v_dot(x.data[i]);
+            if (this->jo[i]->jtype->get_type() == JType::REVOLUTE)
+            {
+                auto joint = reinterpret_cast<Revolute *>(this->jo[i]->jtype);
+                joint->set_v_dot(x.data[i]);
+            }
+             if (this->jo[i]->jtype->get_type() == JType::PRISMATIC)
+            {
+                auto joint = reinterpret_cast<Prismatic *>(this->jo[i]->jtype);
+                joint->set_v_dot(x.data[i]);
+            }
         }
 
         Ic.clear();
