@@ -117,12 +117,14 @@ namespace Engine
                 // auto start = system_clock::now();
                 for (int i = 1; i < this->bo.size(); i++)
                 {
+                    Vector3d pi;
+                    _R roti;
                     Vector3d p;
                     _R rot;
                     Link *a = this->bo[i];
-                    inv_plx(a->j2w * Xw2j[i], rot, p);
+                    inv_plx(a->j2w * Xw2j[i], roti, pi);
 
-                    obb_box box_a{rot.T() * p * (-1), a->box, rot.T()};
+                    obb_box box_a{roti.T() * pi * (-1), a->box, roti.T()};
                     for (int j = i + 1; j < this->bo.size(); j++)
                     {
                         Link *b = this->bo[j];
@@ -134,23 +136,14 @@ namespace Engine
                         int code;
 
                         obb_Intersection(box_a, box_b, 4, outputs, code);
-                        Vector6d f;
-                        double depth = 0;
-                        if (!outputs.empty())
+
+                        for (auto out:outputs)
                         {
-                            contact_results &deepest = *std::max_element(outputs.begin(), outputs.end(),
-                                                                         [](const contact_results &a, const contact_results &b)
-                                                                         {
-                                                                             return std::abs(a.depth) < std::abs(b.depth);
-                                                                         });
-
-                            Vector3d f_contact = deepest.normal * std::abs(deepest.depth); 
-                            Vector3d torque = (deepest.point - center_of_mass).cross(out.normal * out.depth);
-                            this->ext_f[i - 1] += catRow(Vector3d(), f_contact);
-                            this->ext_f[j - 1] += catRow(Vector3d(), f_contact*(-1));
+                            Vector3d f_contact = out.normal * std::abs(out.depth);
+                            Vector3d torque = cross(out.points - p, f_contact);
+                            this->ext_f[i - 1] += catRow(torque, f_contact);
+                            this->ext_f[j - 1] += catRow(torque*(-1), f_contact * (-1));
                         }
-
-              
                     }
                 }
                 Xw2j.clear();
