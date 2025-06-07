@@ -6,6 +6,7 @@
 #include <map>
 #include <timer.h>
 #include <dynamic_matrix.h>
+#include <obb.h>
 
 namespace Engine
 {
@@ -48,19 +49,28 @@ namespace Engine
         friend class World;
 
     private:
+        // robot description
         std::vector<int> p;
         std::vector<int> s;
         std::vector<int> lambda;
         std::vector<Joint *> jo;
-        std::vector<double> tau;
-        std::mutex dynamic_lock;
+
+        // simulation thread
         std::thread daemon;
         bool daemon_running = true;
 
+        // control vector
+        std::vector<double> tau;
+        std::vector<Vector6d> ext_f;
+
+        // used by Inverse Dynamic
+        std::vector<double> zero;
+        std::vector<M66> Xw2j;
         std::vector<Vector6d> v;
         std::vector<Vector6d> a;
         std::vector<Vector6d> f;
 
+        // used by Forward Dynamic
         std::vector<M66> X;
         std::vector<M66> Ic;
 
@@ -81,32 +91,79 @@ namespace Engine
             {
                 this->lambda.emplace_back(std::min(this->p[i], this->s[i]));
                 this->tau.emplace_back(0.0);
+                this->zero.emplace_back(0.0);
+                this->ext_f.emplace_back(Vector6d());
             }
 
             v.reserve(this->bo.size());
             a.reserve(this->bo.size());
             X.reserve(this->bo.size());
-            f.reserve(this->bo.size()-1);
-            Ic.reserve(this->bo.size()-1);
-
+            Xw2j.reserve(this->bo.size());
+            f.reserve(this->bo.size() - 1);
+            Ic.reserve(this->bo.size() - 1);
 
             daemon = std::thread(&Robot::daemon_run, this);
         }
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v);
-        void ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X);
-        void FD(std::vector<double> &tau);
+        void ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X, std::vector<Vector6d> &ext_f);
+        void FD(std::vector<double> &tau, std::vector<Vector6d> &ext_f);
         void daemon_run()
         {
             using namespace std;
             using namespace chrono;
-
+            this->FD(this->tau, this->ext_f);
             while (daemon_running)
             {
-                //auto start = system_clock::now();
-                this->FD(this->tau);
+                // auto start = system_clock::now();
+                for (int i = 1; i < this->bo.size(); i++)
+                {
+                    Vector3d p;
+                    _R rot;
+                    Link *a = this->bo[i];
+                    inv_plx(a->j2w * Xw2j[i], rot, p);
+
+                    obb_box box_a{rot.T() * p * (-1), a->box, rot.T()};
+                    for (int j = i + 1; j < this->bo.size(); j++)
+                    {
+                        Link *b = this->bo[j];
+                        inv_plx(b->j2w * Xw2j[j], rot, p);
+
+                        obb_box box_b{rot.T() * p * (-1), b->box, rot.T()};
+
+                        std::vector<contact_results> outputs;
+                        int code;
+
+                        obb_Intersection(box_a, box_b, 4, outputs, code);
+                        Vector6d f;
+                        double depth = 0;
+                        if (!outputs.empty())
+                        {
+                            contact_results &deepest = *std::max_element(outputs.begin(), outputs.end(),
+                                                                         [](const contact_results &a, const contact_results &b)
+                                                                         {
+                                                                             return std::abs(a.depth) < std::abs(b.depth);
+                                                                         });
+
+                            Vector3d f_contact = deepest.normal * std::abs(deepest.depth); 
+                            Vector3d torque = (deepest.point - center_of_mass).cross(out.normal * out.depth);
+                            this->ext_f[i - 1] += catRow(Vector3d(), f_contact);
+                            this->ext_f[j - 1] += catRow(Vector3d(), f_contact*(-1));
+                        }
+
+              
+                    }
+                }
+                Xw2j.clear();
+                this->FD(this->tau, this->ext_f);
+
+                for (int i = 0; i < this->p.size(); i++)
+                {
+
+                    this->ext_f[i] = Vector6d();
+                }
                 // auto end = system_clock::now();
                 // auto duration = duration_cast<microseconds>(end - start);
-                
+
                 // cout << "花费了"
                 //      << double(duration.count()) * microseconds::period::num / microseconds::period::den
                 //      << "秒" << endl;

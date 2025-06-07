@@ -41,48 +41,42 @@ namespace Engine
         }
     }
 
-    void Robot::ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X)
+    void Robot::ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X, std::vector<Vector6d> &ext_f)
     {
-
+        
         v.emplace_back(Vector6d());
         X.emplace_back(EYE(6));
+        Xw2j.emplace_back(EYE(6));
         a.emplace_back(Vector6d({0, 0, 0, 0, 0, 9.81}));
         for (int i = 0; i < this->bo.size() - 1; i++)
         {
             M66 Xj;
+            M66 Xi0;
             Vector6d vj;
             BaseJoint *joint = jo[i]->jtype;
-
+            joint->jcalc(Xj, vj);
+            M66 I = bo[i + 1]->get_inertia();
+            M66 Xip = rot_mul_xlt(Xj, jo[i]->parent2joint);
+            
+            Xi0 = Xip * Xw2j[this->lambda[i]];
+            Vector6d vi = Xip * v[this->lambda[i]] + vj;
+            Vector6d ai;
             if (joint->get_type() == JType::REVOLUTE)
             {
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
-                rjoint->jcalc(Xj, vj);
-                M66 I = bo[i + 1]->get_inertia();
-                M66 Xip = rot_mul_xlt(Xj, jo[i]->parent2joint);
-
-                Vector6d vi = Xip * v[this->lambda[i]] + vj;
-                Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
-
-                X.emplace_back(std::move(Xip));
-                f.emplace_back(I * ai + crf(vi) * (I * vi));
-                v.emplace_back(std::move(vi));
-                a.emplace_back(std::move(ai));
+                ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
             }
             else if (joint->get_type() == JType::PRISMATIC)
             {
-                Prismatic *rjoint = reinterpret_cast<Prismatic *>(joint);
-                rjoint->jcalc(Xj, vj);
-                M66 I = bo[i + 1]->get_inertia();
-                M66 Xip = Xj * jo[i]->parent2joint;
-
-                Vector6d vi = Xip * v[this->lambda[i]] + vj;
-                Vector6d ai = Xip * a[this->lambda[i]] + rjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
-
-                X.emplace_back(std::move(Xip));
-                f.emplace_back(I * ai + crf(vi) * (I * vi));
-                v.emplace_back(std::move(vi));
-                a.emplace_back(std::move(ai));
+                Prismatic *pjoint = reinterpret_cast<Prismatic *>(joint);
+                ai = Xip * a[this->lambda[i]] + pjoint->get_motion_subspace() * v_dot[i] + crm(vi) * vj;
             }
+
+            X.emplace_back(std::move(Xip));
+            f.emplace_back(I * ai + crf(vi) * (I * vi) + force_trans(Xi0, ext_f[i]));
+            Xw2j.emplace_back(std::move(Xi0));
+            v.emplace_back(std::move(vi));
+            a.emplace_back(std::move(ai));
         }
 
         for (int i = this->bo.size() - 2; i >= 0; i--)
@@ -92,31 +86,27 @@ namespace Engine
             {
                 Revolute *rjoint = reinterpret_cast<Revolute *>(joint);
                 tau.emplace_back((rjoint->get_motion_subspace().T() * f[i])[0]);
-
-                if (this->lambda[i] != 0)
-                    f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1] ^ f[i]);
             }
             else if (joint->get_type() == JType::PRISMATIC)
             {
                 Prismatic *rjoint = reinterpret_cast<Prismatic *>(joint);
                 tau.emplace_back((rjoint->get_motion_subspace().T() * f[i])[0]);
-
-                if (this->lambda[i] != 0)
-                    f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1] ^ f[i]);
             }
+            if (this->lambda[i] != 0)
+                f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1] ^ f[i]);
         }
         this->v.clear();
         this->f.clear();
         this->a.clear();
     }
 
-    void Robot::FD(std::vector<double> &tau)
+    void Robot::FD(std::vector<double> &tau, std::vector<Vector6d> &ext_f)
     {
         std::vector<double> C;
 
         DynamicMatrix<DynamicMatrix<double>> H(this->jo.size(), this->jo.size());
-        std::vector<double> zero(tau.size(), 0.0);
-        this->ID(C, zero, X);
+        
+        this->ID(C, zero, X, ext_f);
 
         for (int i = 1; i < this->bo.size(); i++)
         {
@@ -184,7 +174,7 @@ namespace Engine
                 auto joint = reinterpret_cast<Revolute *>(this->jo[i]->jtype);
                 joint->set_v_dot(x.data[i]);
             }
-             if (this->jo[i]->jtype->get_type() == JType::PRISMATIC)
+            if (this->jo[i]->jtype->get_type() == JType::PRISMATIC)
             {
                 auto joint = reinterpret_cast<Prismatic *>(this->jo[i]->jtype);
                 joint->set_v_dot(x.data[i]);

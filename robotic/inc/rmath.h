@@ -76,8 +76,8 @@ namespace Engine
                 -e7 * t2 + e8 * t1, e6 * t2 - e8 * t0, -e6 * t1 + e7 * t0, e6, e7, e8};
     }
 
-    template <typename T>
-    inline void inv_plx(T &&x, _R &E, Vector3d &p)
+
+    inline void inv_plx(const M66 &x, _R &E, Vector3d &p)
     {
         E[0] = x[0];
         E[1] = x[1];
@@ -149,7 +149,7 @@ namespace Engine
         const double m = Ic[21];
         const Vector3d X_E_vh(X_E ^ vh);
         const Vector3d h(X_E_vh + X_p * m);
-        const _R i((X_E ^ I) * X_E - h % X_p - (X_p) % X_E_vh);
+        const _R i((X_E ^ I) * X_E - hat_mul_hat(h , X_p) - hat_mul_hat(X_p,X_E_vh));
         const double h0 = h[0];
         const double h1 = h[1];
         const double h2 = h[2];
@@ -160,6 +160,27 @@ namespace Engine
             0, h2, -h1, m, 0, 0,
             -h2, 0, h0, 0, m, 0,
             h1, -h0, 0, 0, 0, m};
+    }
+
+    inline Matrix<double, 6, 1> force_trans(M66 &X, Matrix<double, 6, 1> &force)
+    {
+        _R E;
+        Vector3d p;
+        inv_plx(X,E,p);
+        Matrix<double, 6, 1> res;
+        Vector3d n = force.data;
+        Vector3d f = force.data+3;
+        Vector3d res_n = res.data;
+        Vector3d res_f = res.data+3;
+
+        res_n.inplace_set(E*(n-hat_mul_vec(p,f)));
+        res_f.inplace_set(E*f);
+        n.data = nullptr;
+        f.data = nullptr;
+        res_n.data = nullptr;
+        res_f.data = nullptr;
+
+        return std::move(res);
     }
 
 }

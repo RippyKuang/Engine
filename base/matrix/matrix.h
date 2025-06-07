@@ -13,13 +13,14 @@
 
 namespace Engine
 {
+
     template <typename _Scalar, int _Rows, int _Cols>
     class Matrix
     {
     protected:
         const int row = _Rows;
         const int col = _Cols;
-    
+
     public:
         _Scalar *data;
         friend inline Matrix<double, 6, 1> operator+(Matrix<double, 6, 1> &a, Matrix<double, 6, 1> &&b);
@@ -115,7 +116,7 @@ namespace Engine
             return m;
         }
 
-        Matrix operator+(const Matrix &b) const 
+        Matrix operator+(const Matrix &b) const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
@@ -136,35 +137,35 @@ namespace Engine
                 m[x] = this->data[x] - b[x];
             return m;
         }
-        Matrix operator*(const _Scalar &b)const
+        Matrix operator*(const _Scalar &b) const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] * b;
             return m;
         }
-        Matrix operator*(const _Scalar &&b)const
+        Matrix operator*(const _Scalar &&b) const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] * b;
             return m;
         }
-        Matrix operator/(const _Scalar &b)const
+        Matrix operator/(const _Scalar &b) const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] / b;
             return m;
         }
-        Matrix operator+(const _Scalar &b)const
+        Matrix operator+(const _Scalar &b) const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
                 m[x] = this->data[x] + b;
             return m;
         }
-        Matrix operator-(const _Scalar &b)const
+        Matrix operator-(const _Scalar &b) const
         {
             Matrix<_Scalar, _Rows, _Cols> m;
             for (int x = 0; x < _Rows * _Cols; x++)
@@ -173,9 +174,6 @@ namespace Engine
         }
         void operator=(const Matrix &b)
         {
-            if (this->data)
-                free(this->data);
-            this->data = (_Scalar *)malloc((_Rows * _Cols) * sizeof(_Scalar));
             for (int i = 0; i < _Rows * _Cols; i++)
                 this->data[i] = b[i];
         }
@@ -185,6 +183,11 @@ namespace Engine
                 free(this->data);
             this->data = b.data;
             b.data = nullptr;
+        }
+
+        inline void inplace_set(const Matrix &b)
+        {
+            memcpy(this->data, b.data, sizeof(_Scalar) * _Rows * _Cols);
         }
         template <typename T1, int _bRow, int _bCol>
         Matrix<T1, _Rows, _bCol> operator*(const Matrix<T1, _bRow, _bCol> &b)
@@ -242,6 +245,12 @@ namespace Engine
     using Point2i = Matrix<int, 2, 1>;
     using _T = Matrix<double, 4, 4>;
     using _R = Matrix<double, 3, 3>;
+
+    struct pixel
+    {
+        Vector3d color;
+        Point2i pos;
+    };
 
     template <typename T>
     Matrix<T, 3, 3> hat(const Matrix<T, 3, 1> &m)
@@ -306,12 +315,6 @@ namespace Engine
                 m[i * (_aCol + _bCol) + j] = b[i * _bCol + j - _aCol];
         return m;
     }
-
-    struct pixel
-    {
-        Vector3d color;
-        Point2i pos;
-    };
 
     inline Matrix<double, 6, 1> operator*(Matrix<double, 6, 6> &a, Matrix<double, 6, 1> &b)
     {
@@ -407,7 +410,7 @@ namespace Engine
         return res;
     }
 
-    inline Matrix<double, 3, 3> operator%(const Matrix<double, 3, 3> &a, const Matrix<double, 3, 1> &b)
+    inline Matrix<double, 3, 3> mat_mul_hat(const Matrix<double, 3, 3> &a, const Matrix<double, 3, 1> &b)
     {
         const double b0 = b[0];
         const double b1 = b[1];
@@ -425,7 +428,13 @@ namespace Engine
         };
     }
 
-    inline Matrix<double, 3, 3> operator%(const Matrix<double, 3, 1> &a, const Matrix<double, 3, 1> &b)
+    inline Matrix<double, 3, 1> hat_mul_vec(const Matrix<double, 3, 1> &a, const Matrix<double, 3, 1> &b)
+    {
+        return {-a[2] * b[1] + a[1] * b[2], a[2] * b[0] - a[0] * b[2], -a[1] * b[0] + a[0] * b[1]};
+    }
+
+    // hat_vec mul hat_vec
+    inline Matrix<double, 3, 3> hat_mul_hat(const Matrix<double, 3, 1> &a, const Matrix<double, 3, 1> &b)
     {
         const double x22 = -a[2] * b[2];
         const double x21 = a[2] * b[1];
@@ -440,6 +449,7 @@ namespace Engine
             x20, x21, x11 + x00};
     }
 
+    // transpose matrix multiply
     inline Matrix<double, 3, 1> operator^(const Matrix<double, 3, 3> &a, const Matrix<double, 3, 1> &b)
     {
 

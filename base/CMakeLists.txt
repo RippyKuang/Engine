@@ -5,6 +5,7 @@ include_directories("${PROJECT_BINARY_DIR}"
 					"${PROJECT_SOURCE_DIR}/robotic/inc"
 					"${PROJECT_SOURCE_DIR}/middleware/inc"
 					"${PROJECT_SOURCE_DIR}/visualize/render"
+					"${PROJECT_SOURCE_DIR}/collision/Broadphase"
 		            )
 add_subdirectory(matrix)
 

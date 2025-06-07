@@ -18,6 +18,8 @@ namespace Engine
         Mesh mesh;
 
     public:
+        Matrix<double,6,6> j2w;
+        Vector3d box;
         Link(Mesh &m) : mesh(m) {};
 
         Link(Mesh &&t) : mesh(std::forward<Mesh>(t)) {};
