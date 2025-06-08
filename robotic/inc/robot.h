@@ -135,13 +135,16 @@ namespace Engine
                         std::vector<contact_results> outputs;
                         int code;
 
-                        obb_Intersection(box_a, box_b, 4, outputs, code);
-
-                        for (auto out : outputs)
+                        if (obb_Intersection(box_a, box_b, 4, outputs, code))
                         {
-                            Vector3d f_contact = out.normal * std::abs(out.depth);
-                            this->ext_f[i - 1] += catRow(cross(out.points - pi, f_contact), f_contact);
-                            this->ext_f[j - 1] += catRow(cross(out.points - p, f_contact) * (-1), f_contact * (-1));
+                            for (auto out : outputs)
+                            {
+                                Vector3d f_contact = out.normal;
+                                Vector3d torque = cross(out.points, f_contact);
+                                if (i != 0)
+                                    this->ext_f[i - 1] += catRow(torque, f_contact);
+                                this->ext_f[j - 1] += catRow(torque * (-1), f_contact * (-1));
+                            }
                         }
                     }
                 }

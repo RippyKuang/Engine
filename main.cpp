@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     Camera camera(Vector3d{-0.6, -0.3, 0.2}, _R{300, 0, ww / 2, 0, 300, hh / 2, 0, 0, 1});
     World w(camera, ww, hh);
 
-    Part j0(base_link, link0, Vector3d{0, 0, 0.2 / 2 - 0.025}, new Revolute(AXIS_X));
+    Part j0(base_link, link0, Vector3d{-0.051, 0, 0.2 / 2 - 0.025}, new Revolute(AXIS_X));
     Part j1(link0, link1, Vector3d{0, -0.2, 0}, new Revolute(AXIS_X));
 
     Robot *robot = w.parse_robot({j0,j1});

@@ -20,6 +20,7 @@ namespace Engine
         virtual void jcalc(M66 &, Vector6d &) = 0;
         virtual JType get_type() = 0;
         virtual void step(double) = 0;
+        virtual void force_set_speed(double) = 0;
     };
 
     class Revolute : public BaseJoint
@@ -50,6 +51,10 @@ namespace Engine
         Matrix<double, 6, 1> get_motion_subspace()
         {
             return this->motion_subspace;
+        }
+        void force_set_speed(double s) override
+        {
+            this->q_dot = s;
         }
 
         void set_v_dot(double v_dot)
@@ -129,6 +134,10 @@ namespace Engine
         {
             return this->motion_subspace;
         }
+        void force_set_speed(double s) override
+        {
+            this->q_dot = s;
+        }
 
         void set_v_dot(double v_dot)
         {
@@ -149,7 +158,7 @@ namespace Engine
         void jcalc(M66 &X, Vector6d &vj) override
         {
 
-            X = xlt(this->axis*q);
+            X = xlt(this->axis * q);
             vj = this->motion_subspace * q_dot;
         }
         Prismatic(Vector3d &&axis) : axis(axis)
