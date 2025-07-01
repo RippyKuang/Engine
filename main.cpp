@@ -18,36 +18,34 @@ int main(int argc, char *argv[])
     const int ww = 1280;
     const int hh = 1024;
     Engine::GFrame frame(argc, argv, ww, hh);
-    Cube base_link(Vector3d{0.05, 0.05, 0.2});
-    Cube link0(Vector3d{0.05, 0.2, 0.05}, Vector3d{0, 0, 0}, Vector3d{0, -0.1 + 0.025, 0});
-    Cube link1(Vector3d{0.05, 0.2, 0.05}, Vector3d{0, 0, 0}, Vector3d{0, -0.1 + 0.025, 0});
-
-    base_link.set_name("base_link");
+    Cube base_link(Vector3d{0.3, 0.3, 0.4});
+   
+    Cube link0(Vector3d{0.1, 0.1, 0.35});
+    Cube link1(Vector3d{0.1, 0.3, 0.1}, Vector3d{0, 0, 0}, Vector3d{0.1, -0.3/2, 0});
+    Cube link2(Vector3d{0.1, 0.3, 0.1}, Vector3d{0, 0, 0}, Vector3d{0, -0.3/2, 0});
+  
+    base_link.set_name("ground");
     link0.set_name("link0");
     link1.set_name("link1");
-
-    Camera camera(Vector3d{-0.6, -0.3, 0.2}, _R{300, 0, ww / 2, 0, 300, hh / 2, 0, 0, 1});
+    link2.set_name("link2");
+    Camera camera(Vector3d{-2, -1, 1}, _R{300, 0, ww / 2, 0, 300, hh / 2, 0, 0, 1});
     World w(camera, ww, hh);
 
-    Part j0(base_link, link0, Vector3d{-0.051, 0, 0.2 / 2 - 0.025}, new Revolute(AXIS_X));
-    Part j1(link0, link1, Vector3d{0, -0.2, 0}, new Revolute(AXIS_X));
-
-    Robot *robot = w.parse_robot({j0,j1});
+    Part j0(base_link, link0, Vector3d{0, 0, 0.4/2+0.35/2}, new Revolute(AXIS_Z));
+    Part j1(link0, link1, Vector3d{0, 0, 0.35/2-0.1/2}, new Revolute(AXIS_X));
+    Part j2(link1, link2, Vector3d{0, -0.3+0.1/2, 0}, new Revolute(AXIS_X));
+    Robot *robot = w.parse_robot({j0,j1,j2});
     frame.show(w.get_camera_handle());
     robot->summary();
-    robot->set_tau({0,0});
+    robot->set_tau({0,0,0});
     while (1)
     {
         std::vector<Point2i> frame_projs;
-        // std::vector<double> tau;
-        // std::vector<double> v_dot{0,1};
-        // std::vector<M66> X;
-        // robot->ID(tau, v_dot, X);
-        // robot->set_tau(tau);
-    
+       
+        robot->step();
         std::vector<pixel> projs;
         auto promise = w.project();
-        usleep(50000);
+        usleep(1000);
         frame.updateFuture(std::move(promise));
     }
     return 0;

@@ -23,8 +23,8 @@ namespace Engine
     }
     inline _R rz(double theta)
     {
-        const double c = std::cos(theta);
-        const double s = std::sin(theta);
+        const double c = cos(theta);
+        const double s = sin(theta);
         return {c, s, 0,
                 -s, c, 0,
                 0, 0, 1};
@@ -92,7 +92,7 @@ namespace Engine
         E[8] = x[14];
         p[0] = x[20] * x[1] + x[26] * x[7] + x[32] * x[13];
         p[1] = x[18] * x[2] + x[24] * x[8] + x[30] * x[14];
-        p[2] = x[19] * x[0] + x[26] * x[6] + x[32] * x[12];
+        p[2] = x[19] * x[0] + x[25] * x[6] + x[31] * x[12];  //c^2*t2+
     }
 
     template <typename T1, typename T2>

@@ -102,60 +102,22 @@ namespace Engine
             f.reserve(this->bo.size() - 1);
             Ic.reserve(this->bo.size() - 1);
 
-            daemon = std::thread(&Robot::daemon_run, this);
+            //daemon = std::thread(&Robot::daemon_run, this);
         }
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v);
         void ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X, std::vector<Vector6d> &ext_f);
         void FD(std::vector<double> &tau, std::vector<Vector6d> &ext_f);
+
         void daemon_run()
         {
             using namespace std;
             using namespace chrono;
-            this->FD(this->tau, this->ext_f);
+
             while (daemon_running)
             {
-                // auto start = system_clock::now();
-                for (int i = 1; i < this->bo.size(); i++)
-                {
-                    Vector3d pi;
-                    _R roti;
-                    Vector3d p;
-                    _R rot;
-                    Link *a = this->bo[i];
-                    inv_plx(a->j2w * Xw2j[i], roti, pi);
 
-                    obb_box box_a{roti.T() * pi * (-1), a->box, roti.T()};
-                    for (int j = i + 1; j < this->bo.size(); j++)
-                    {
-                        Link *b = this->bo[j];
-                        inv_plx(b->j2w * Xw2j[j], rot, p);
+              //  this->FD(this->tau, this->ext_f);
 
-                        obb_box box_b{rot.T() * p * (-1), b->box, rot.T()};
-
-                        std::vector<contact_results> outputs;
-                        int code;
-
-                        if (obb_Intersection(box_a, box_b, 4, outputs, code))
-                        {
-                            for (auto out : outputs)
-                            {
-                                Vector3d f_contact = out.normal;
-                                Vector3d torque = cross(out.points, f_contact);
-                                if (i != 0)
-                                    this->ext_f[i - 1] += catRow(torque, f_contact);
-                                this->ext_f[j - 1] += catRow(torque * (-1), f_contact * (-1));
-                            }
-                        }
-                    }
-                }
-                Xw2j.clear();
-                this->FD(this->tau, this->ext_f);
-
-                for (int i = 0; i < this->p.size(); i++)
-                {
-
-                    this->ext_f[i] = Vector6d();
-                }
                 // auto end = system_clock::now();
                 // auto duration = duration_cast<microseconds>(end - start);
 
@@ -165,6 +127,13 @@ namespace Engine
 
                 for (int i = 0; i < this->jo.size(); i++)
                     this->jo[i]->jtype->step(1e-6);
+
+                this->Xw2j.clear();
+                this->v.clear();
+                this->f.clear();
+                this->a.clear();
+                this->Ic.clear();
+                this->X.clear();
             }
         }
 
@@ -173,6 +142,11 @@ namespace Engine
             this->tau = tau;
         }
         void summary() const;
+        void step()
+        {
+            for (int i = 0; i < this->jo.size(); i++)
+                this->jo[i]->jtype->step(1e-2);
+        }
 
         ~Robot()
         {

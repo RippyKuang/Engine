@@ -135,7 +135,7 @@ namespace Engine
         double norm_L = std::sqrt(light_dir[0] * light_dir[0] + light_dir[1] * light_dir[1] + light_dir[2] * light_dir[2]);
         double nh = std::max(std::pow((N[0] * h[0] + N[1] * h[1] + N[2] * h[2]) / (norm_h * norm_N), 10), 0.0);
         double nl = std::max((N[0] * light_dir[0] + N[1] * light_dir[1] + N[2] * light_dir[2]) / (norm_N * norm_L), 0.0);
-        double intensity = std::min(0.7 * nl + 0.3 * nh, 1.0);
+        double intensity = std::min(0.8 * nl + 0.2 * nh, 1.0);
 
         return Vector3d{intensity, intensity, intensity};
     }

@@ -25,9 +25,11 @@ namespace Engine
         std::vector<Vector4d> getCoord(int id, int base = -1);
         void emplace(Link &, int);
         std::vector<Robot *> robots;
+        std::vector<Link *> objs;
         Rasterizer raster;
 
     public:
+
         World(Camera &_cam, const int w, const int h) : cam(_cam), raster(w, h)
         {
             pose.insert(std::pair<int, _T>(-1, EYE(4)));
@@ -42,7 +44,7 @@ namespace Engine
                 this->pose[-2] = t * this->pose[-2];
             };
         }
-
+        void emplace(Link&);
         Robot *parse_robot(std::initializer_list<Part>);
         void project_frame(std::vector<Point2i> &, std::vector<_T> &);
         std::future<std::vector<pixel>> project();

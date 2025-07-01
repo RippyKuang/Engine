@@ -28,7 +28,7 @@ namespace Engine
     std::future<std::vector<pixel>> World::project()
     {
         std::vector<Mesh> cubes;
-        Vector4d light_dir = {-2, -2, 5, 1};
+        const Vector4d light_dir = {-2, -2, 5, 1};
         {
             std::lock_guard<std::mutex> lock(m);
             for (auto robot_iter = robots.begin(); robot_iter != robots.end(); robot_iter++)
@@ -44,9 +44,21 @@ namespace Engine
                     cubes.push_back(it.mesh);
                 }
             }
+
+            for(auto obj_iter = objs.begin(); obj_iter != objs.end(); obj_iter++)
+            {
+                Link it = *(*obj_iter);
+                it.transform(inv(pose[-2]));
+                cam.project(it);
+                cubes.push_back(it.mesh);
+            }
         }
         Vector4d v = _T{0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1} * inv(pose[-2]) * light_dir;
         return this->raster.parallel_rasterize(cubes, v);
+    }
+    void World::emplace(Link &i)
+    {
+        this->objs.emplace_back(&i);
     }
     std::vector<Vector4d> World::getCoord(int id, int base)
     {

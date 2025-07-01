@@ -31,7 +31,7 @@ namespace Engine
             Vector6d vj;
             jo[i]->jtype->jcalc(Xj, vj);
 
-            M66 Xi0 = Xj * jo[i]->parent2joint * X[this->lambda[i]];
+            M66 Xi0 = rot_mul_xlt(Xj, jo[i]->parent2joint) * X[this->lambda[i]];
             X.emplace_back(Xi0);
             _R E;
             Vector3d p;
@@ -95,9 +95,8 @@ namespace Engine
             if (this->lambda[i] != 0)
                 f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1] ^ f[i]);
         }
-        this->v.clear();
-        this->f.clear();
-        this->a.clear();
+
+      
     }
 
     void Robot::FD(std::vector<double> &tau, std::vector<Vector6d> &ext_f)
@@ -181,8 +180,8 @@ namespace Engine
             }
         }
 
-        Ic.clear();
-        X.clear();
+       
+        
     }
 
 }

@@ -32,7 +32,7 @@ namespace Engine
                 0, this->mass * (x * x + z * z) / 12, 0,
                 0, 0, this->mass * (x * x + y * y) / 12};
         this->inertia = j2w.T() * (catRow(catCol(I, _R()), catCol(_R(), EYE(3) * this->mass))) * j2w;
-        std::cout << "Inertia: " << this->inertia << std::endl;
+
     }
 
 }

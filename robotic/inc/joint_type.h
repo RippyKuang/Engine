@@ -32,7 +32,7 @@ namespace Engine
         _R (*fE)(double);
 
         double q = 0;
-        double q_dot = 0;
+        double q_dot = 1;
         double v_dot = 0;
 
     public:
