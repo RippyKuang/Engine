@@ -102,7 +102,7 @@ namespace Engine
             f.reserve(this->bo.size() - 1);
             Ic.reserve(this->bo.size() - 1);
 
-            //daemon = std::thread(&Robot::daemon_run, this);
+            daemon = std::thread(&Robot::daemon_run, this);
         }
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v);
         void ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X, std::vector<Vector6d> &ext_f);
@@ -116,7 +116,7 @@ namespace Engine
             while (daemon_running)
             {
 
-              //  this->FD(this->tau, this->ext_f);
+                this->FD(this->tau, this->ext_f);
 
                 // auto end = system_clock::now();
                 // auto duration = duration_cast<microseconds>(end - start);
