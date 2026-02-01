@@ -9,5 +9,5 @@ include_directories("${PROJECT_BINARY_DIR}"
 		            )
 add_subdirectory(matrix)
 
-add_library(base STATIC world.cpp  items.cpp camera.cpp )
+add_library(base STATIC world.cpp  items.cpp camera.cpp solver.cpp)
 target_link_libraries(base PUBLIC matrix)

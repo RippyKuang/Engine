@@ -43,7 +43,7 @@ namespace Engine
 
     void Robot::ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X, std::vector<Vector6d> &ext_f)
     {
-        
+
         v.emplace_back(Vector6d());
         X.emplace_back(EYE(6));
         Xw2j.emplace_back(EYE(6));
@@ -57,7 +57,7 @@ namespace Engine
             joint->jcalc(Xj, vj);
             M66 I = bo[i + 1]->get_inertia();
             M66 Xip = rot_mul_xlt(Xj, jo[i]->parent2joint);
-            
+
             Xi0 = Xip * Xw2j[this->lambda[i]];
             Vector6d vi = Xip * v[this->lambda[i]] + vj;
             Vector6d ai;
@@ -95,8 +95,6 @@ namespace Engine
             if (this->lambda[i] != 0)
                 f[this->lambda[i] - 1] = f[this->lambda[i] - 1] + (X[i + 1] ^ f[i]);
         }
-
-      
     }
 
     void Robot::FD(std::vector<double> &tau, std::vector<Vector6d> &ext_f)
@@ -104,7 +102,7 @@ namespace Engine
         std::vector<double> C;
 
         DynamicMatrix<DynamicMatrix<double>> H(this->jo.size(), this->jo.size());
-        
+
         this->ID(C, zero, X, ext_f);
 
         for (int i = 1; i < this->bo.size(); i++)
@@ -158,11 +156,17 @@ namespace Engine
                 }
             }
         }
+        // qdot vector
+        DynamicMatrix<double> qdot(this->jo.size(), 1);
+        for (int i = 0; i < this->jo.size(); i++)
+        {
+            qdot.data[i] = this->jo[i]->jtype->get_q_dot();
+        }
 
         DynamicMatrix<double> b(this->jo.size(), 1);
         for (int i = 0; i < this->jo.size(); i++)
         {
-            b.data[this->jo.size() - 1 - i] = tau[i] - C[i];
+            b.data[this->jo.size() - 1 - i] = tau[this->jo.size() - 1 - i] - C[i] - 0.5 * qdot.data[this->jo.size() - 1 - i];
         }
         DynamicMatrix<double> x(this->jo.size(), 1);
         solve(H.dense(), std::move(b), x);
@@ -179,9 +183,6 @@ namespace Engine
                 joint->set_v_dot(x.data[i]);
             }
         }
-
-       
-        
     }
 
 }

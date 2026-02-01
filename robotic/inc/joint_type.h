@@ -1,8 +1,10 @@
 #pragma once
 #include <rmath.h>
 #include <cmath>
+#include <algorithm>
 #include <type_traits>
 #include <mutex>
+
 namespace Engine
 {
 
@@ -21,6 +23,7 @@ namespace Engine
         virtual JType get_type() = 0;
         virtual void step(double) = 0;
         virtual void force_set_speed(double) = 0;
+        virtual double get_q_dot() = 0;
     };
 
     class Revolute : public BaseJoint
@@ -34,6 +37,9 @@ namespace Engine
         double q = 0;
         double q_dot = 0;
         double v_dot = 0;
+
+        const double viscous = 0;
+        const double coulomb = 0;
 
     public:
         using space_type = Matrix<double, 6, 1>;
@@ -61,14 +67,14 @@ namespace Engine
         {
             this->v_dot = v_dot;
         }
-        double get_q_dot()
+        double get_q_dot() override
         {
+           
             return this->q_dot;
         }
 
         void step(double dt) override
         {
-
             q_dot += v_dot * dt;
             q += q_dot * dt;
             q = fmod(q, 2 * M_PI);
@@ -144,7 +150,7 @@ namespace Engine
             this->v_dot = v_dot;
         }
 
-        double get_q_dot()
+        double get_q_dot() override
         {
             return this->q_dot;
         }
@@ -161,6 +167,7 @@ namespace Engine
             X = xlt(this->axis * q);
             vj = this->motion_subspace * q_dot;
         }
+
         Prismatic(Vector3d &&axis) : axis(axis)
         {
             this->type = PRISMATIC;

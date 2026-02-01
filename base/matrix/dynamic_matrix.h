@@ -100,7 +100,7 @@ namespace Engine
                     new_data[i * cols + j] = this->at(i, j);
 
             DynamicMatrix<Type> dense_matrix(size[0], size[1]);
-            free(dense_matrix.data); 
+            free(dense_matrix.data);
             dense_matrix.data = new_data;
             return std::move(dense_matrix);
         }
@@ -181,7 +181,7 @@ namespace Engine
 
         DynamicMatrix<Type> T()
         {
-            DynamicMatrix<Type> m(cols,rows);
+            DynamicMatrix<Type> m(cols, rows);
             for (int r = 0; r < cols; r++)
                 for (int c = 0; c < rows; c++)
                     m.data[r * rows + c] = this->data[c * cols + r];
@@ -202,6 +202,20 @@ namespace Engine
         ~DynamicMatrix()
         {
             this->custom_free();
+        }
+
+        DynamicMatrix<Type>  operator*(DynamicMatrix<Type> &b)
+        {
+            assert(this->cols == b.rows);
+            auto res = DynamicMatrix<Type>(rows,b.cols);
+            for (int m = 0; m < rows; m++)
+                for (int s = 0; s < b.cols; s++)
+                {
+                    res.data[m * b.cols + s] = 0;
+                    for (int n = 0; n < b.rows; n++)
+                        res.data[m * b.cols + s] += this->data[m * cols + n] * b.data[n * b.cols + s];
+                }
+            return res;
         }
     };
 
