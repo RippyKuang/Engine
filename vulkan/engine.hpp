@@ -26,7 +26,7 @@ private:
     std::thread daemon;
     bool daemon_running = false;
     std::mutex m;
-    Window window{WIDTH, HEIGHT, "VkEngine"};
+    Window window{WIDTH, HEIGHT, "vkEngine"};
     Device device{window};
     Renderer renderer{window, device};
     VkExtent2D swapChainExtent;
