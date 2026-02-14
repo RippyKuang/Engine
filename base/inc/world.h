@@ -1,3 +1,4 @@
+#pragma once
 #include <camera.h>
 #include <vector>
 #include <robot.h>
@@ -28,6 +29,8 @@ namespace Engine
         std::vector<Link *> objs;
         Rasterizer raster;
 
+
+
     public:
 
         World(Camera &_cam, const int w, const int h) : cam(_cam), raster(w, h)
@@ -47,6 +50,7 @@ namespace Engine
         void emplace(Link&);
         Robot *parse_robot(std::initializer_list<Part>);
         void project_frame(std::vector<Point2i> &, std::vector<_T> &);
+        const std::vector<Link *> getAllLinks() const;
         std::future<std::vector<pixel>> project();
     };
 

@@ -9,8 +9,9 @@ add_subdirectory(base)
 add_subdirectory(robotic)
 add_subdirectory(middleware)
 add_subdirectory(collision)
+add_subdirectory(vulkan)
 add_executable(engine main.cpp)
-target_link_libraries(engine PUBLIC visual base robot middleware collision)
+target_link_libraries(engine PUBLIC visual base robot middleware collision vulkanapp)
 
 target_include_directories(engine PUBLIC
                           "${PROJECT_BINARY_DIR}"
@@ -21,5 +22,6 @@ target_include_directories(engine PUBLIC
                           "${PROJECT_SOURCE_DIR}/robotic/inc"
                           "${PROJECT_SOURCE_DIR}/collision/Broadphase"
                           "${PROJECT_SOURCE_DIR}/middleware/inc"
+                          "${PROJECT_SOURCE_DIR}/vulkan"
                           ${GTK3_INCLUDE_DIRS}
                           )

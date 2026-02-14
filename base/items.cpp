@@ -1,4 +1,4 @@
-#include <items.h>
+#include "items.h"
 
 namespace Engine
 {
@@ -17,6 +17,16 @@ namespace Engine
         return this->mesh.vertices;
     }
 
+    std::vector<Vector3f> Link::fget_corners()
+    {
+        std::vector<Vector3f> res;
+        for (auto vert : this->mesh.vertices)
+        {
+            res.push_back(vert);
+        }
+        return res;
+    }
+
     Cube::Cube(Vector3d box, Vector3d rpy, Vector3d xyz, double mass) : Link(cube_mesh(box))
     {
         this->box = box;
@@ -32,7 +42,6 @@ namespace Engine
                 0, this->mass * (x * x + z * z) / 12, 0,
                 0, 0, this->mass * (x * x + y * y) / 12};
         this->inertia = j2w.T() * (catRow(catCol(I, _R()), catCol(_R(), EYE(3) * this->mass))) * j2w;
-
     }
 
 }

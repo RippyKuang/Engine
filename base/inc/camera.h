@@ -1,3 +1,4 @@
+#pragma once
 #include <items.h>
 
 namespace Engine

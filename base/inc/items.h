@@ -40,6 +40,7 @@ namespace Engine
         void set_name(std::string name);
         std::string get_name() { return this->name; }
         std::vector<Vector4d> &get_corners();
+        std::vector<Vector3f> fget_corners();
         friend std::ostream &operator<<(std::ostream &output,
                                         const Link &link)
         {

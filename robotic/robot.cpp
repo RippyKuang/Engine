@@ -41,6 +41,27 @@ namespace Engine
         }
     }
 
+    void Robot::FK_vulkan(std::vector<Matrix<float,4,4>> &T)
+    {
+        std::vector<M66> X;
+        T.emplace_back(EYE(4));
+        X.emplace_back(EYE(6));
+
+        for (int i = 0; i < this->bo.size() - 1; i++)
+        {
+            M66 Xj;
+            Vector6d vj;
+            jo[i]->jtype->jcalc(Xj, vj);
+
+            M66 Xi0 = rot_mul_xlt(Xj, jo[i]->parent2joint) * X[this->lambda[i]];
+            X.emplace_back(Xi0);
+            _R E;
+            Vector3d p;
+            inv_plx(Xi0, E, p);
+            T.emplace_back(getTransformMat(E.T(), p));
+        }
+    }
+
     void Robot::ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X, std::vector<Vector6d> &ext_f)
     {
 

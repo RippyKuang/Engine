@@ -107,7 +107,7 @@ namespace Engine
         void FK(std::vector<_T> &T, std::vector<Vector6d> &v);
         void ID(std::vector<double> &tau, std::vector<double> &v_dot, std::vector<M66> &X, std::vector<Vector6d> &ext_f);
         void FD(std::vector<double> &tau, std::vector<Vector6d> &ext_f);
-
+        void FK_vulkan(std::vector<Matrix<float,4,4>> &T);
         void daemon_run()
         {
             using namespace std;
@@ -115,7 +115,6 @@ namespace Engine
 
             while (daemon_running)
             {
-
                 this->FD(this->tau, this->ext_f);
 
                 // auto end = system_clock::now();

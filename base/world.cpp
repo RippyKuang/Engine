@@ -9,7 +9,6 @@ namespace Engine
         links.insert(std::pair<int, Link *>(id, &i));
     }
 
-
     void World::project_frame(std::vector<Point2i> &projs, std::vector<_T> &t)
     {
         for (auto trans : t)
@@ -45,7 +44,7 @@ namespace Engine
                 }
             }
 
-            for(auto obj_iter = objs.begin(); obj_iter != objs.end(); obj_iter++)
+            for (auto obj_iter = objs.begin(); obj_iter != objs.end(); obj_iter++)
             {
                 Link it = *(*obj_iter);
                 it.transform(inv(pose[-2]));
@@ -65,6 +64,21 @@ namespace Engine
         Link it = *links.at(id);
         it.transform(inv(pose[base]));
         return std::move(it.get_corners());
+    }
+
+    const std::vector<Link *> World::getAllLinks()const
+    {
+        std::vector<Link *> links;
+            for (auto robot_iter = robots.begin(); robot_iter != robots.end(); robot_iter++)
+            {
+                for (int i = 0; i < (*robot_iter)->bo.size(); i++)
+                    links.emplace_back((*robot_iter)->bo[i]);      
+            }
+
+            for (auto obj_iter = objs.begin(); obj_iter != objs.end(); obj_iter++)
+               links.emplace_back(*obj_iter);
+            
+        return links;
     }
 
     Robot *World::parse_robot(std::initializer_list<Part> jo)
