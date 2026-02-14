@@ -34,6 +34,7 @@ namespace Engine
         double y = box[1];
         double z = box[2];
         this->mass = mass;
+        this->center = xyz;
 
         _T init_pose = getTransformMat(rpy2rot(rpy), xyz);
         transform(init_pose);

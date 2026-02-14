@@ -20,6 +20,8 @@ namespace Engine
     public:
         Matrix<double,6,6> j2w;
         Vector3d box;
+        Vector3d center;
+        
         Link(Mesh &m) : mesh(m) {};
 
         Link(Mesh &&t) : mesh(std::forward<Mesh>(t)) {};

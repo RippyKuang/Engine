@@ -66,18 +66,18 @@ namespace Engine
         return std::move(it.get_corners());
     }
 
-    const std::vector<Link *> World::getAllLinks()const
+    const std::vector<Link *> World::getAllLinks() const
     {
         std::vector<Link *> links;
-            for (auto robot_iter = robots.begin(); robot_iter != robots.end(); robot_iter++)
-            {
-                for (int i = 0; i < (*robot_iter)->bo.size(); i++)
-                    links.emplace_back((*robot_iter)->bo[i]);      
-            }
+        for (auto robot_iter = robots.begin(); robot_iter != robots.end(); robot_iter++)
+        {
+            for (int i = 0; i < (*robot_iter)->bo.size(); i++)
+                links.emplace_back((*robot_iter)->bo[i]);
+        }
 
-            for (auto obj_iter = objs.begin(); obj_iter != objs.end(); obj_iter++)
-               links.emplace_back(*obj_iter);
-            
+        for (auto obj_iter = objs.begin(); obj_iter != objs.end(); obj_iter++)
+            links.emplace_back(*obj_iter);
+
         return links;
     }
 
@@ -117,7 +117,7 @@ namespace Engine
                 }
             }
         }
-        Robot *rp = new Robot(vp, vs, joints, links);
+        Robot *rp = new Robot(vp, vs, joints, links, objs);
         this->robots.emplace_back(rp);
         return rp;
     }

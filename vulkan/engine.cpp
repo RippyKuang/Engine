@@ -70,7 +70,6 @@ void EngineApplication::daemon_run()
     ubo.proj[1][1] *= -1;
     ubo.cameraPos = camera_pos;
     ubo.lightPos = light_pos;
-  
 
     while ((!window.shouldClose()) && daemon_running)
     {
@@ -86,7 +85,7 @@ void EngineApplication::daemon_run()
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                                     &descriptorSets[frameIndex], 0, nullptr);
             {
-               // std::lock_guard<std::mutex> lock(m);
+                // std::lock_guard<std::mutex> lock(m);
                 for (int i = 0; i < objCount; i++)
                 {
 
@@ -119,8 +118,10 @@ void EngineApplication::daemon_run()
 
 void EngineApplication::update(std::vector<Engine::Matrix<float, 4, 4>> &mpose)
 {
-    for (int i = 0; i < objCount; i++)
+    for (int i = 0; i < mpose.size(); i++)
         pose[i] = glm::transpose(glm::make_mat4(mpose[i].data));
+    for (int i = mpose.size(); i < objCount; i++)
+        pose[i] = glm::mat4(1);
 }
 void EngineApplication::loadWorld(const std::vector<Engine::Link *> links)
 {

@@ -41,7 +41,7 @@ namespace Engine
         }
     }
 
-    void Robot::FK_vulkan(std::vector<Matrix<float,4,4>> &T)
+    void Robot::FK_vulkan(std::vector<Matrix<float, 4, 4>> &T)
     {
         std::vector<M66> X;
         T.emplace_back(EYE(4));
@@ -94,7 +94,7 @@ namespace Engine
             }
 
             X.emplace_back(std::move(Xip));
-            f.emplace_back(I * ai + crf(vi) * (I * vi) + force_trans(Xi0, ext_f[i]));
+            f.emplace_back(I * ai + crf(vi) * (I * vi) + force_trans(Xi0, ext_f[i+1]));
             Xw2j.emplace_back(std::move(Xi0));
             v.emplace_back(std::move(vi));
             a.emplace_back(std::move(ai));
@@ -204,6 +204,20 @@ namespace Engine
                 joint->set_v_dot(x.data[i]);
             }
         }
+    }
+    double Robot::calcHuntCrossleyContactForce(
+        double z,
+        double dz,
+        double k,
+        double p,
+        double beta)
+    {
+
+        double springForce = k * std::pow(-z, p);
+        double dampingForce =  springForce* (-beta * dz);
+        double force = springForce + dampingForce;
+
+        return force;
     }
 
 }
