@@ -12,7 +12,7 @@ class EngineApplication
 public:
     static constexpr int WIDTH = 1280;
     static constexpr int HEIGHT = 1024;
-
+    static constexpr float LINE_WIDTH = 0.0005;
     EngineApplication();
     ~EngineApplication();
 
@@ -45,7 +45,7 @@ private:
     std::vector<void *> uniformBuffersMapped;
     std::vector<uint32_t> offset; 
     uint32_t objCount = 0; 
-    uint32_t indexCount = 0;
+
 
     void createDescriptorSetLayout();
     void createPipelineLayout();

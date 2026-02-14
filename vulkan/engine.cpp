@@ -146,9 +146,9 @@ void EngineApplication::loadWorld(const std::vector<Engine::Link *> links)
     // y axis
     int bias = vertices.size();
     vertices.push_back({{0, 0, 0}, {0, 1, 0}, {0, 0, 1}});
-    vertices.push_back({{0.0005, 0, 0}, {0, 1, 0}, {0, 0, 1}});
+    vertices.push_back({{LINE_WIDTH, 0, 0}, {0, 1, 0}, {0, 0, 1}});
     vertices.push_back({{0, 0.5, 0}, {0, 1, 0}, {0, 0, 1}});
-    vertices.push_back({{0.0005, 0.5, 0}, {0, 1, 0}, {0, 0, 1}});
+    vertices.push_back({{LINE_WIDTH, 0.5, 0}, {0, 1, 0}, {0, 0, 1}});
     indices.push_back(bias + 0);
     indices.push_back(bias + 1);
     indices.push_back(bias + 2);
@@ -159,9 +159,9 @@ void EngineApplication::loadWorld(const std::vector<Engine::Link *> links)
     // x axis
     bias = vertices.size();
     vertices.push_back({{0, 0, 0}, {1, 0, 0}, {0, 0, 1}});
-    vertices.push_back({{0, 0.0005, 0}, {1, 0, 0}, {0, 0, 1}});
+    vertices.push_back({{0, LINE_WIDTH, 0}, {1, 0, 0}, {0, 0, 1}});
     vertices.push_back({{0.5, 0, 0}, {1, 0, 0}, {0, 0, 1}});
-    vertices.push_back({{0.5, +0.0005, 0}, {1, 0, 0}, {0, 0, 1}});
+    vertices.push_back({{0.5, LINE_WIDTH, 0}, {1, 0, 0}, {0, 0, 1}});
     indices.push_back(bias + 2);
     indices.push_back(bias + 1);
     indices.push_back(bias + 0);
@@ -172,9 +172,9 @@ void EngineApplication::loadWorld(const std::vector<Engine::Link *> links)
     // z axis
     bias = vertices.size();
     vertices.push_back({{0, 0, 0}, {0, 0, 1}, {1, 0, 0}});
-    vertices.push_back({{0, 0.0005, 0}, {0, 0, 1}, {1, 0, 0}});
+    vertices.push_back({{0, LINE_WIDTH, 0}, {0, 0, 1}, {1, 0, 0}});
     vertices.push_back({{0, 0, 0.5}, {0, 0, 1}, {1, 0, 0}});
-    vertices.push_back({{0, 0.0005, 0.5}, {0, 0, 1}, {1, 0, 0}});
+    vertices.push_back({{0, LINE_WIDTH, 0.5}, {0, 0, 1}, {1, 0, 0}});
     indices.push_back(bias + 0);
     indices.push_back(bias + 1);
     indices.push_back(bias + 2);
@@ -182,7 +182,6 @@ void EngineApplication::loadWorld(const std::vector<Engine::Link *> links)
     indices.push_back(bias + 3);
     indices.push_back(bias + 2);
 
-    indexCount = indices.size();
     model = std::make_unique<Model>(device, vertices, indices);
 }
 
