@@ -20,7 +20,7 @@ layout(binding=0)uniform UniformBufferObject
 const vec3  kd = vec3(0.8);   
 const vec3  ks = vec3(0.5);   
 const float shininess = 32.0;
-const vec3 lightColor = vec3(1);
+const vec3 lightColor = vec3(1,1,1);
 
 void main()
 {
@@ -36,7 +36,7 @@ void main()
 
   
     float NdotL = max(dot(N, L), 0.0);
-    vec3 diffuse = kd * NdotL;
+    vec3 diffuse = kd * NdotL* lightColor ;
 
   
     float NdotH = max(dot(N, H), 0.0);
