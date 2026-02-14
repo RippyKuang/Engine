@@ -3,6 +3,7 @@
 
 layout(location = 0) in vec3 vWorldPos;
 layout(location = 1) in vec3 vNormal;
+layout(location = 2) in vec3 kd;
 
 layout(location = 0) out vec4 outColor;
 
@@ -16,15 +17,13 @@ layout(binding=0)uniform UniformBufferObject
     mat4 proj;
 }ubo;
 
-
-const vec3  kd = vec3(0.8);   
 const vec3  ks = vec3(0.5);   
 const float shininess = 32.0;
 const vec3 lightColor = vec3(1,1,1);
 
 void main()
 {
-  
+
     vec3 N = normalize(vNormal);
     vec3 L = normalize(ubo.lightPos - vWorldPos);
     vec3 V = normalize(ubo.cameraPos - vWorldPos);

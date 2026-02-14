@@ -15,6 +15,7 @@ layout(location=2)in vec3 normal;
 
 layout(location=0)out vec3 vPosition;
 layout(location=1)out vec3 vNormal;
+layout(location=2)out vec3 vcolor;
 
 layout(push_constant)uniform Push
 {
@@ -27,7 +28,7 @@ void main()
     mat3 normalMat = transpose(inverse(mat3(push.model)));
     vNormal = normalMat * normal;
     vPosition = worldPos.xyz;
-
+    vcolor = color;
     gl_Position = ubo.proj * ubo.view * worldPos;
     
 }

@@ -45,6 +45,8 @@ private:
     std::vector<void *> uniformBuffersMapped;
     std::vector<uint32_t> offset; 
     uint32_t objCount = 0; 
+    uint32_t indexCount = 0;
+
     void createDescriptorSetLayout();
     void createPipelineLayout();
     void createUniformBuffers();

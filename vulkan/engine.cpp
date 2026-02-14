@@ -62,7 +62,6 @@ void EngineApplication::daemon_run()
 
     const glm::vec3 camera_pos = {0.5f, 0.5f, 0.5f};
     const glm::vec3 light_pos = {0.0f, 0.0f, 1.5f};
-
     UniformBufferObject ubo{};
 
     ubo.view = glm::lookAt(camera_pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -100,6 +99,10 @@ void EngineApplication::daemon_run()
                                        &push);
                     model->draw(commandBuffer, 36, 36 * i);
                 }
+
+                model->draw(commandBuffer, 6, 36 * objCount);
+                model->draw(commandBuffer, 6, 36 * objCount + 6);
+                model->draw(commandBuffer, 6, 36 * objCount + 12);
             }
 
             renderer.endSwapChainRenderPass(commandBuffer);
@@ -140,6 +143,46 @@ void EngineApplication::loadWorld(const std::vector<Engine::Link *> links)
         vertices.insert(vertices.end(), vert.begin(), vert.end());
         indices.insert(indices.end(), ind.begin(), ind.end());
     }
+    // y axis
+    int bias = vertices.size();
+    vertices.push_back({{0, 0, 0}, {0, 1, 0}, {0, 0, 1}});
+    vertices.push_back({{0.0005, 0, 0}, {0, 1, 0}, {0, 0, 1}});
+    vertices.push_back({{0, 0.5, 0}, {0, 1, 0}, {0, 0, 1}});
+    vertices.push_back({{0.0005, 0.5, 0}, {0, 1, 0}, {0, 0, 1}});
+    indices.push_back(bias + 0);
+    indices.push_back(bias + 1);
+    indices.push_back(bias + 2);
+    indices.push_back(bias + 1);
+    indices.push_back(bias + 3);
+    indices.push_back(bias + 2);
+
+    // x axis
+    bias = vertices.size();
+    vertices.push_back({{0, 0, 0}, {1, 0, 0}, {0, 0, 1}});
+    vertices.push_back({{0, 0.0005, 0}, {1, 0, 0}, {0, 0, 1}});
+    vertices.push_back({{0.5, 0, 0}, {1, 0, 0}, {0, 0, 1}});
+    vertices.push_back({{0.5, +0.0005, 0}, {1, 0, 0}, {0, 0, 1}});
+    indices.push_back(bias + 2);
+    indices.push_back(bias + 1);
+    indices.push_back(bias + 0);
+    indices.push_back(bias + 2);
+    indices.push_back(bias + 3);
+    indices.push_back(bias + 1);
+
+    // z axis
+    bias = vertices.size();
+    vertices.push_back({{0, 0, 0}, {0, 0, 1}, {1, 0, 0}});
+    vertices.push_back({{0, 0.0005, 0}, {0, 0, 1}, {1, 0, 0}});
+    vertices.push_back({{0, 0, 0.5}, {0, 0, 1}, {1, 0, 0}});
+    vertices.push_back({{0, 0.0005, 0.5}, {0, 0, 1}, {1, 0, 0}});
+    indices.push_back(bias + 0);
+    indices.push_back(bias + 1);
+    indices.push_back(bias + 2);
+    indices.push_back(bias + 1);
+    indices.push_back(bias + 3);
+    indices.push_back(bias + 2);
+
+    indexCount = indices.size();
     model = std::make_unique<Model>(device, vertices, indices);
 }
 
